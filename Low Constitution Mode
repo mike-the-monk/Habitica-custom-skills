@@ -16,7 +16,7 @@ const WEB_APP_URL = "PasteGeneratedWebAppUrlHere";
 /* [Users] Optional customizations to fill in */
 /* ========================================== */
 
-// Do you want to get private message notifications about when you enter or exit Low-Constitution Mode?
+// Do you want to get private message notifications about when you enter or exit Low Constitution Mode?
 // Default is no notification. If you want them, change the 0 to a 1 in the line below
 const NOTIFICATIONS_ON = 0; 
 
@@ -33,9 +33,9 @@ const HEADERS = {
 
 const scriptProperties = PropertiesService.getScriptProperties(); // Constants can have properties changed
 
-const LOW_CON_MODE_TEXT = "**Low-Constitution Mode**";
+const LOW_CON_MODE_TEXT = "**Low Constitution Mode**";
 const LOW_CON_MODE_ALIAS = "LOW_CON";
-const LOW_CON_MODE_NOTES = "Press once to enter Low-Constitution Mode, creating an anti-buff that sets your CON to 1 until you Cron tomorrow. Press again to exit Low-Constitution Mode.";
+const LOW_CON_MODE_NOTES = "Press once to enter Low Constitution Mode, creating an anti-buff that sets your CON to 1 until you Cron tomorrow. Press again to exit Low Constitution Mode.";
 const LOW_CON_MODE_VALUE = "0";
 
 const LOW_CON_MODE_BUTTON = {
@@ -103,7 +103,7 @@ function doPost(e) {
       antiBuffUsage = 0;
     }
     
-    // If anti-buff usage is even, then user is currently not in Low-Con Mode. Therefore, put them in it
+    // If anti-buff usage is even, then user is currently not in Low Con Mode. Therefore, put them in it
     if (antiBuffUsage % 2 == 0) {
       const responseContent = apiFree_getAllAvailableContentObjects();
       content = JSON.parse(responseContent).data;
@@ -117,16 +117,16 @@ function doPost(e) {
       antiBuffAmount = antiBuffCon;
       antiBuffUsage++;
       
-      api_sendPrivateMessage({"message" : "Currently in Low-Constitution Mode.", "toUserId" : USER_ID});
+      api_sendPrivateMessage({"message" : "Currently in Low Constitution Mode.", "toUserId" : USER_ID});
     }
-    // If anti-buff usage is odd, then user is in Low-Con Mode. Therefore, remove them from it
+    // If anti-buff usage is odd, then user is in Low Con Mode. Therefore, remove them from it
     else {
       // Reverse the anti-buff, unsave anti-buff value, increment counter
       api_updateUser({"stats.buffs.con" : 1 - antiBuffCon});
       antiBuffAmount = 0;
       antiBuffUsage++;
       
-      api_sendPrivateMessage({"message" : "Not currently in Low-Constitution Mode.", "toUserId" : USER_ID})
+      api_sendPrivateMessage({"message" : "Not currently in Low Constitution Mode.", "toUserId" : USER_ID})
     }
   }
   
