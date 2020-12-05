@@ -14,7 +14,7 @@ const WEB_APP_URL = "PasteGeneratedWebAppUrlHere";
 const CREATE_RANDOM = 1; // Change this 1 to a 0 if you don't want the Random Transformation (self only) item
 
 const CREATE_SNOWBALL = 0; // Change this 0 to a 1 if you want the Snowball (self only) Transformation Item 
-const CREATE_SHINY_SEED = 0; // Change this 0 to a 1 if you want the Shiny Seed Transformation (self only) Item 
+const CREATE_SHINY_SEED = 0; // Change this 0 to a 1 if you want the Shiny Seed (self only) Transformation Item 
 const CREATE_SEAFOAM = 0; // Change this 0 to a 1 if you want the Seafoam (self only) Transformation Item 
 const CREATE_SPOOKY_SPARKLES = 0; // Change this 0 to a 1 if you want the Spooky Sparkles (self only) Transformation Item 
 
