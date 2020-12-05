@@ -11,7 +11,7 @@ const WEB_APP_URL = "PasteGeneratedWebAppUrlHere";
 /* ========================================== */
 /* [Users] Required customizations to fill in */
 /* ========================================== */
-const CREATE_RANDOM = 1; // Change this 1 to a 0 if you don't want the Random Transform 1tem
+const CREATE_RANDOM = 1; // Change this 1 to a 0 if you don't want the Random Transform item
 
 const CREATE_SNOWBALL = 0; // Change this 0 to a 1 if you want the Snowball Transformation Item 
 const CREATE_SHINY_SEED = 0; // Change this 0 to a 1 if you want the Shiny Seed Transformation Item 
