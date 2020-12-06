@@ -155,79 +155,83 @@ function doPost(e) {
     var isSeafoam = user.stats.buffs.seafoam;
     
     // If any of the Boolean search flipped, reset them and subtract 5 GP (if they don't have it, send error meesage)
-    if ( (isSnowball) || (isSpookySparkles) || (isShinySeed) || (isSeafoam) ) {
-      if ( gp >= 5 ) {    
-        api_updateUser({"stats.buffs.snowball" : false, "stats.buffs.spookySparkles" : false, "stats.buffs.shinySeed" : false,
+    if ( (task.alias == SNOWBALL_ALIAS) || (task.alias == SPOOKY_SPARKLES_ALIAS) || (task.alias == SHINY_SEED_ALIAS) || 
+      (task.alias == SEAFOAM_ALIAS) || (task.alias == RANDOM_ALIAS) ) {
+      
+        if ( (isSnowball) || (isSpookySparkles) || (isShinySeed) || (isSeafoam) ) {
+          if ( gp >= 5 ) {    
+            api_updateUser({"stats.buffs.snowball" : false, "stats.buffs.spookySparkles" : false, "stats.buffs.shinySeed" : false,
                       "stats.buffs.seafoam" : false, "stats.gp" : gp - 5});
-      }
-      else {
-        api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 5 GP to transform back.", "toUserId" : USER_ID});
-      }
-    }
-    // Otherwise, subtract 15 GP and do the correct transformation (if they don't have it, send error meesage)
-    else {
-      if (task.alias == SNOWBALL_ALIAS) {
-        if ( gp >= 15) {
-          api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
-        }
-        else {
-          api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-        }
-      }
-      
-      else if (task.alias == SPOOKY_SPARKLES_ALIAS) {
-        if ( gp >= 15) {
-          api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
-        }
-        else {
-          api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-        }
-      }
-      
-      else if (task.alias == SHINY_SEED_ALIAS) {
-        if ( gp >= 15) {
-          api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
-        }
-        else {
-          api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-        }
-      }
-      
-      else if (task.alias == SEAFOAM_ALIAS) {
-        if ( gp >= 15) {
-          api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
-        }
-        else {
-          api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-        }
-      }
-      
-      else if (task.alias == RANDOM_ALIAS) {
-        if ( gp >= 15) {
-          var rand = Math.floor((Math.random() * 4) + 1);
-          switch (rand){
-            case 1:
-              api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
-              break;
-            case 2:
-              api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
-              break;
-            case 3:
-              api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
-              break;
-            case 4:
-              api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
-              break;
+          }
+          else {
+            api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 5 GP to transform back.", "toUserId" : USER_ID});
           }
         }
+        // Otherwise, subtract 15 GP and do the correct transformation (if they don't have it, send error meesage)
         else {
-          api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+          if (task.alias == SNOWBALL_ALIAS) {
+            if ( gp >= 15) {
+              api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
+            }
+            else {
+              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+            }
+          }
+        
+          else if (task.alias == SPOOKY_SPARKLES_ALIAS) {
+            if ( gp >= 15) {
+              api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
+            }
+            else {
+              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+            }
+          }
+          
+          else if (task.alias == SHINY_SEED_ALIAS) {
+            if ( gp >= 15) {
+              api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
+            }
+            else {
+              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+            }
+          }
+          
+          else if (task.alias == SEAFOAM_ALIAS) {
+            if ( gp >= 15) {
+              api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
+            }
+            else {
+              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+            }
+          }
+          
+          else if (task.alias == RANDOM_ALIAS) {
+            if ( gp >= 15) {
+              var rand = Math.floor((Math.random() * 4) + 1);
+              switch (rand){
+                case 1:
+                  api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
+                  break;
+                case 2:
+                  api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
+                  break;
+                case 3:
+                  api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
+                  break;
+                case 4:
+                  api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
+                  break;
+              }
+            }
+            else {
+              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+            }
+          }
         }
-      }
     }
-  }
   
-  return HtmlService.createHtmlOutput();
+    return HtmlService.createHtmlOutput();
+  }
 }
 
 // Create custom reward buttons
