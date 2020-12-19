@@ -1,0 +1,759 @@
+// This code is licensed under the same terms as Habitica:
+  // https://raw.githubusercontent.com/HabitRPG/habitrpg/develop/LICENSE
+
+/* ========================================== */
+/* [Users] Required script data to fill in    */
+/* ========================================== */
+const USER_ID = "PasteYourUserIdHere";
+const API_TOKEN = "PasteYourApiTokenHere"; // Do not share this to anyone
+const WEB_APP_URL = "PasteGeneratedWebAppUrlHere";
+
+/* ========================================== */
+/* [Users] Required customizations to fill in */
+/* ========================================== */
+
+// For each skill you want to add, change the 0 to a 1. If you don't want it, keep it as a 0
+
+const CREATE_PICKPOCKET = 0; // Gain GP based on Perception. 15 MP. Unlocks at level 11.
+const CREATE_BACKSTAB = 0; // Gain GP and XP based on Strength. 20 MP. Unlocks at level 12.
+const CREATE_STEALTH = 0; // Take no damage from some undone Dailies, based on Perception. 50 MP. Unlocks at level 14.
+const CREATE_HEALING_LIGHT = 0; // Gain HP based on Intelligence and Constitution. 20 MP. Unlocks at level 11.
+const CREATE_CHILLING_FROST = 0; // Freeze streaks of all Dailies so they don't reset if incomplete. 45 MP. Unlocks at level 14.
+const CREATE_BURST_OF_FLAMES = 0; // Gain XP based on Intelligence. 10 MP. Unlocks at level 11.
+
+
+// Which version of the skill do you want to use? (you can do the same or different for each skill)
+// Choose 2 if you want to set a task value and use it rather than using a specific task.
+// Choose 3 if you want to average the task values of all your Dailies and use that.
+// Choose 4 if you want to select one task and always use that task with this skill.
+
+const PICKPOCKET_VERSION = 2;
+const BACKSTAB_VERSION = 2;
+const BURST_OF_FLAMES_VERSION = 2;
+
+
+// Based on the version you picked, scroll to the relevant section below
+
+
+
+// If you picked version 2 for any of them, select what task value you want to use
+// For example, a green task can have a task value between 1 and 5
+// A light blue task and have a task value between 6 and 11
+// A bright blue task has a value above 12
+// The maximum task value is 21.27
+
+const PICKPOCKET_TASK_VALUE = 10;
+const BACKSTAB_TASK_VALUE = 10;
+const BURST_OF_FLAMES_TASK_VALUE = 10;
+
+
+// If you picked version 3 for any of them, you don't have to do anything else in this section.
+
+
+// If you picked version 4 for any of them, find the task ID of the task you want to use and paste below
+// Instructions for this are found in the wiki page
+
+const PICKPOCKET_TASK_ID = "620dc42a-b258-47a9-84fa-a5c437345a9";
+const BACKSTAB_TASK_ID = "620dc42a-b258-47a9-84fa-a5c437345a9";
+const BURST_OF_FLAMES_TASK_ID = "620dc42a-b258-47a9-84fa-a5c437345a9";
+
+
+
+
+/* ========================================== */
+/* [Users] Optional customizations to fill in */
+/* ========================================== */
+
+// Do you want to get private message notifications for having insufficient mana or being too low of a level to use the skill?
+// If you don't want them, change the 1 to a 0 in the line below
+const NOTIFICATIONS_ON = 1; 
+
+/* ========================================== */
+/* [Users] Do not edit code below this line   */
+/* ========================================== */
+const AUTHOR_ID = "0034eb14-b4d8-494e-8386-d3f33cff7922";
+const SCRIPT_NAME = "Cross-Class Skills";
+const HEADERS = {
+  "x-client" : AUTHOR_ID + "-" + SCRIPT_NAME,
+  "x-api-user" : USER_ID,
+  "x-api-key" : API_TOKEN,
+}
+
+const LEVEL_LOCK_PICKPOCKET = 11;
+const LEVEL_LOCK_BACKSTAB = 12;
+const LEVEL_LOCK_STEALTH = 14;
+const LEVEL_LOCK_HEALING_LIGHT = 11;
+const LEVEL_LOCK_CHILLING_FROST = 14;
+const LEVEL_LOCK_BURST_OF_FLAMES = 11;
+
+const MP_COST_PICKPOCKET = 15;
+const MP_COST_BACKSTAB = 20;
+const MP_COST_STEALTH = 50;
+const MP_COST_HEALING_LIGHT = 20;
+const MP_COST_CHILLING_FROST = 45;
+const MP_COST_BURST_OF_FLAMES = 10;
+
+const PICKPOCKET_TEXT = "**Cross-Class Pickpocket**";
+const PICKPOCKET_ALIAS = "ccPickpocket";
+const PICKPOCKET_NOTES = "You rob a nearby task and gain gold! (Based on: PER). 15 MP.";
+const PICKPOCKET_VALUE = "0";
+
+const PICKPOCKET_BUTTON = {
+    "text": PICKPOCKET_TEXT,
+    "type": "reward",
+    "alias": PICKPOCKET_ALIAS,
+    "notes": PICKPOCKET_NOTES,
+    "value": PICKPOCKET_VALUE,
+}
+
+const BACKSTAB_TEXT = "**Cross-Class Backstab**";
+const BACKSTAB_ALIAS = "ccBackstab";
+const BACKSTAB_NOTES = "You betray a foolish task and gain gold and XP! (Based on: STR). 20 MP.";
+const BACKSTAB_VALUE = "0";
+
+const BACKSTAB_BUTTON = {
+    "text": BACKSTAB_TEXT,
+    "type": "reward",
+    "alias": BACKSTAB_ALIAS,
+    "notes": BACKSTAB_NOTES,
+    "value": BACKSTAB_VALUE,
+}
+
+const STEALTH_TEXT = "**Cross-Class Stealth**";
+const STEALTH_ALIAS = "ccStealth";
+const STEALTH_NOTES = "With each cast, a few of your undone Dailies won't cause damage tonight. Their streaks and colors won't change. (Based on: PER) (Cast multiple times to affect more Dailies.). 50 MP.";
+const STEALTH_VALUE = "0";
+
+const STEALTH_BUTTON = {
+    "text": STEALTH_TEXT,
+    "type": "reward",
+    "alias": STEALTH_ALIAS,
+    "notes": STEALTH_NOTES,
+    "value": STEALTH_VALUE,
+}
+
+const HEALING_LIGHT_TEXT = "**Cross-Class Healing Light**";
+const HEALING_LIGHT_ALIAS = "ccHealingLight";
+const HEALING_LIGHT_NOTES = "Shining light restores your health! (Based on: CON and INT). 20 MP.";
+const HEALING_LIGHT_VALUE = "0";
+
+const HEALING_LIGHT_BUTTON = {
+    "text": HEALING_LIGHT_TEXT,
+    "type": "reward",
+    "alias": HEALING_LIGHT_ALIAS,
+    "notes": HEALING_LIGHT_NOTES,
+    "value": HEALING_LIGHT_VALUE,
+}
+
+const CHILLING_FROST_TEXT = "**Cross-Class Chilling Frost**";
+const CHILLING_FROST_ALIAS = "ccChillingFrost";
+const CHILLING_FROST_NOTES = "With one cast, ice freezes all your streaks so they won't reset to zero tomorrow! 45 MP.";
+const CHILLING_FROST_VALUE = "0";
+
+const CHILLING_FROST_BUTTON = {
+    "text": CHILLING_FROST_TEXT,
+    "type": "reward",
+    "alias": CHILLING_FROST_ALIAS,
+    "notes": CHILLING_FROST_NOTES,
+    "value": CHILLING_FROST_VALUE,
+}
+
+const BURST_OF_FLAMES_TEXT = "**Cross-Class Burst of Flames (XP only)**";
+const BURST_OF_FLAMES_ALIAS = "ccBurstOfFlames";
+const BURST_OF_FLAMES_NOTES = "You summon fiery XP! (Based on: INT). 10 MP.";
+const BURST_OF_FLAMES_VALUE = "0";
+
+const BURST_OF_FLAMES_BUTTON = {
+    "text": BURST_OF_FLAMES_TEXT,
+    "type": "reward",
+    "alias": BURST_OF_FLAMES_ALIAS,
+    "notes": BURST_OF_FLAMES_NOTES,
+    "value": BURST_OF_FLAMES_VALUE,
+}
+
+function doOneTimeSetup() {
+  // These are not "else if" statements on purpose
+  if (CREATE_BURST_OF_FLAMES == 1) {
+    api_createNewTaskForUser([BURST_OF_FLAMES_BUTTON]);
+  }
+  if (CREATE_CHILLING_FROST == 1) {
+    api_createNewTaskForUser([CHILLING_FROST_BUTTON]);
+  }
+  if (CREATE_HEALING_LIGHT == 1) {
+    api_createNewTaskForUser([HEALING_LIGHT_BUTTON]);
+  }
+  if (CREATE_STEALTH == 1) {
+    api_createNewTaskForUser([STEALTH_BUTTON]);
+  }
+  if (CREATE_BACKSTAB == 1) {
+    api_createNewTaskForUser([BACKSTAB_BUTTON]);
+  }
+  if (CREATE_PICKPOCKET == 1) {
+    api_createNewTaskForUser([PICKPOCKET_BUTTON]);
+  }
+  
+  // Next, create the webhook
+  const options = {
+    "scored" : true,
+  }
+  const payload = {
+    "url" : WEB_APP_URL,
+    "label" : SCRIPT_NAME + " Webhook",
+    "type" : "taskActivity",
+    "options" : options,
+  }
+  apiMult_createNewWebhookNoDuplicates(payload);
+}
+
+// do things when the webhook runs
+function doPost(e) {
+  const dataContents = JSON.parse(e.postData.contents);
+  const type = dataContents.type;
+  const task = dataContents.task;
+  
+  // Sanitize task alias
+  if ((task.alias == undefined) || (task.alias == null)) {
+    task.alias = "";
+  }
+  if (type == "scored") {
+    // Check if the alias matches any of them
+    if ( (task.alias == PICKPOCKET_ALIAS) || (task.alias == BACKSTAB_ALIAS) || (task.alias == STEALTH_ALIAS) 
+      || (task.alias == HEALING_LIGHT_ALIAS) || (task.alias == CHILLING_FROST_ALIAS)
+      || (task.alias == BURST_OF_FLAMES_ALIAS) ) {
+        
+        // Get user info
+        const responseUser = api_getAuthenticatedUserProfile("stats,tasksOrder,items.gear.equipped");
+        user = JSON.parse(responseUser).data;
+
+        // Get equipment stats info
+        const responseContent = apiFree_getAllAvailableContentObjects();
+        content = JSON.parse(responseContent).data;
+        
+        var lvl = user.stats.lvl;
+        var mp = user.stats.mp;
+        var hp = user.stats.hp;
+        var xp = user.stats.exp;
+        var gp = user.stats.gp;
+        
+        var totalDailies = user.tasksOrder.dailys.length;
+        var stealthedDailies = user.stats.buffs.stealth;
+        if (!stealthedDailies) {stealthedDailies = 0};
+        var frostCast = user.stats.buffs.streaks;
+        
+        var strength = calculateStrength();      
+        var intelligence = calculateIntelligence();
+        var constitution = calculateConstitution();     
+        var perception = calculatePerception();
+                
+        // Check which alias it is. Then, check level lock and mana.
+        if (task.alias == PICKPOCKET_ALIAS) {
+          if ( lvl < LEVEL_LOCK_PICKPOCKET ) {
+            api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 11 to use this skill.", "toUserId" : USER_ID});
+          }
+          else {
+            var enoughMana = checkMana(mp, MP_COST_PICKPOCKET);
+            if (enoughMana) {
+              // Subtract mana cost, and do the skill
+              api_updateUser({"stats.mp" : mp - MP_COST_PICKPOCKET});
+
+              pickpocket(PICKPOCKET_VERSION, PICKPOCKET_TASK_VALUE, PICKPOCKET_TASK_ID, gp, perception);
+            }
+          }
+        }
+        else if (task.alias == BACKSTAB_ALIAS) {
+          if ( lvl < LEVEL_LOCK_BACKSTAB  ) {
+            api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 12 to use this skill.", "toUserId" : USER_ID});
+          }
+          else {
+            var enoughMana = checkMana(mp, MP_COST_BACKSTAB );
+            if (enoughMana) {
+              // Subtract mana cost, and do the skill
+              api_updateUser({"stats.mp" : mp - MP_COST_BACKSTAB });
+
+              backstab(BACKSTAB_VERSION, BACKSTAB_TASK_VALUE, BACKSTAB_TASK_ID, gp, xp, strength);
+            }
+          }
+        }
+        else if (task.alias == STEALTH_ALIAS) {
+          if ( lvl < LEVEL_LOCK_STEALTH  ) {
+            api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 14 to use this skill.", "toUserId" : USER_ID});
+          }
+          else {
+            var enoughMana = checkMana(mp, MP_COST_STEALTH );
+            if (enoughMana) {
+              // Check if you've already avoided all dailies, send message if yes
+              if (stealthedDailies >= totalDailies){
+                api_sendPrivateMessageAlways({"message" : "You've already avoided all you Dailies, so additional uses of this skill have no effect.", "toUserId" : USER_ID});
+              }
+              else {
+                // Subtract mana cost, and do the skill
+                api_updateUser({"stats.mp" : mp - MP_COST_STEALTH });
+                stealth (totalDailies, stealthedDailies, perception);
+              }
+            }
+          }
+        }
+        else if (task.alias == HEALING_LIGHT_ALIAS) {
+          if ( lvl < LEVEL_LOCK_HEALING_LIGHT ) {
+            api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 11 to use this skill.", "toUserId" : USER_ID});
+          }
+          else {
+            var enoughMana = checkMana(mp, MP_COST_HEALING_LIGHT );
+            if (enoughMana) {
+              // If at max HP, do nothing. Otherwise, subtract mana cost, and do the skill
+              if (hp < 50) {
+                api_updateUser({"stats.mp" : mp - MP_COST_HEALING_LIGHT });
+                healingLight (hp, constitution, intelligence);
+              }
+            }
+          }
+        }
+        else if (task.alias == CHILLING_FROST_ALIAS) {
+          if ( lvl < LEVEL_LOCK_CHILLING_FROST  ) {
+            api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 14 to use this skill.", "toUserId" : USER_ID});
+          }
+          else {
+            var enoughMana = checkMana(mp, MP_COST_CHILLING_FROST );
+            if (enoughMana) {
+              // Check if already cast, send message if yes
+              if (frostCast == true){
+                api_sendPrivateMessageAlways({"message" : "You've already used this skill. Additional uses have no effect.", "toUserId" : USER_ID});
+              }
+              else {
+                // Subtract mana cost, and do the skill
+                api_updateUser({"stats.mp" : mp - MP_COST_CHILLING_FROST })
+                chillingFrost();
+              }
+            }
+          }
+        }
+        else if (task.alias == BURST_OF_FLAMES_ALIAS) {
+          if ( lvl < LEVEL_LOCK_BURST_OF_FLAMES  ) {
+            api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 11 to use this skill.", "toUserId" : USER_ID});
+          }
+          else {
+            var enoughMana = checkMana(mp, MP_COST_BURST_OF_FLAMES );
+            if (enoughMana) {
+              // Subtract mana cost, and do the skill
+              api_updateUser({"stats.mp" : mp - MP_COST_BURST_OF_FLAMES })
+
+              burstOfFlames(BURST_OF_FLAMES_VERSION, BURST_OF_FLAMES_TASK_VALUE, BURST_OF_FLAMES_TASK_ID, xp, intelligence, perception); 
+            }
+          }
+        }
+    }
+  }
+  
+  return HtmlService.createHtmlOutput();
+}
+
+// Create custom reward buttons
+function api_createNewTaskForUser(payload) {
+  var params = {
+    "method" : "post",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload), // Rightmost button goes on top
+    "muteHttpExceptions" : true,
+  }
+
+  var url = "https://habitica.com/api/v3/tasks/user";
+  UrlFetchApp.fetch(url, params);
+}
+
+// Create a webhook if no duplicate exists
+function apiMult_createNewWebhookNoDuplicates(payload) {
+  const response = api_getWebhooks();
+  const webhooks = JSON.parse(response).data;
+  var duplicateExists = 0;
+    
+  for (var i in webhooks) {
+    if (webhooks[i].label == payload.label) {
+      duplicateExists = 1;
+    }
+  }
+  // If webhook to be created doesn't exist yet
+  if (!duplicateExists) {
+    api_createNewWebhook(payload);
+  }
+}
+
+// Used to see existing webhooks, and therefore if there's a duplicate
+function api_getWebhooks() {
+  const params = {
+    "method" : "get",
+    "headers" : HEADERS,
+    "muteHttpExceptions" : true,
+  }
+  
+  const url = "https://habitica.com/api/v3/user/webhook";
+  return UrlFetchApp.fetch(url, params);
+}
+
+// Creates a webhook (as part of the "don't make it if there's a duplicate" function)
+function api_createNewWebhook(payload) {
+  const params = {
+    "method" : "post",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload),
+    "muteHttpExceptions" : true,
+  }
+   
+  const url = "https://habitica.com/api/v3/user/webhook";
+  return UrlFetchApp.fetch(url, params);
+}
+
+// Gets user info so I can use it, especially stats like mana, experience, and level
+function api_getAuthenticatedUserProfile(userFields) {
+  const params = {
+    "method" : "get",
+    "headers" : HEADERS,
+    "muteHttpExceptions" : true,
+  }
+  
+  var url = "https://habitica.com/api/v3/user";
+  if (userFields != "") {
+    url += "?userFields=" + userFields;
+  }
+
+  return UrlFetchApp.fetch(url, params);
+}
+
+// Send a notification as a private message, only if they're enabled
+function api_sendPrivateMessage(payload) {
+  switch (NOTIFICATIONS_ON){ // Check if notifications are on, send message if yes
+        case 0:
+          break;        
+        case 1:
+            const params = {
+              "method" : "post",
+              "headers" : HEADERS,
+              "contentType" : "application/json",
+              "payload" : JSON.stringify(payload),
+              "muteHttpExceptions" : true,
+            }
+            const url = "https://habitica.com/api/v3/members/send-private-message";
+            return UrlFetchApp.fetch(url, params);
+          break;
+  }
+}
+
+// Send a notification as a private message regardless of if they're enabled
+function api_sendPrivateMessageAlways(payload) {
+  const params = {
+    "method" : "post",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload),
+    "muteHttpExceptions" : true,
+  }
+  const url = "https://habitica.com/api/v3/members/send-private-message";
+  return UrlFetchApp.fetch(url, params);
+}
+
+function apiFree_getAllAvailableContentObjects() {
+  const params = {
+    "method" : "get",
+    "muteHttpExceptions" : true,
+  }
+  
+  const url = "https://habitica.com/api/v3/content";
+  return UrlFetchApp.fetch(url, params);
+}
+
+function calculateStrength() {
+  const levelStr = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassStr = 0;
+  const allocatedStr = user.stats.str;
+  const buffsStr = user.stats.buffs.str;
+  
+  // Get STR from equipped gear
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelStr + totalEquipmentAndClassStr + allocatedStr + buffsStr;
+}
+
+function calcEquipmentAndClassStr(equipment) {
+  var equipmentAndClassStr = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassStr += equipment.str;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassStr += equipment.str / 2;
+    }
+  }
+  
+  return equipmentAndClassStr;
+}
+
+function calculateIntelligence() {
+  const levelInt = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassInt = 0;
+  const allocatedInt = user.stats.int;
+  const buffsInt = user.stats.buffs.int;
+
+  // Get INT from equipped gear
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelInt + totalEquipmentAndClassInt + allocatedInt + buffsInt;
+}
+
+function calcEquipmentAndClassInt(equipment) {
+  var equipmentAndClassInt = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassInt += equipment.int;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassInt += equipment.int / 2;
+    }
+  }
+  
+  return equipmentAndClassInt;
+}
+
+function calculateConstitution() {
+  const levelCon = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassCon = 0;
+  const allocatedCon = user.stats.con;
+  const buffsCon = user.stats.buffs.con;
+  
+  // Get CON from equipped gear
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelCon + totalEquipmentAndClassCon + allocatedCon + buffsCon;
+}
+
+function calcEquipmentAndClassCon(equipment) {
+  var equipmentAndClassCon = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassCon += equipment.con;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassCon += equipment.con / 2;
+    }
+  }
+  
+  return equipmentAndClassCon;
+}
+
+function calculatePerception() {
+  const levelPer = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassPer = 0;
+  const allocatedPer = user.stats.per;
+  const buffsPer = user.stats.buffs.per;
+  
+  // Get PER from equipped gear
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelPer + totalEquipmentAndClassPer + allocatedPer + buffsPer;
+}
+
+function calcEquipmentAndClassPer(equipment) {
+  var equipmentAndClassPer = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassPer += equipment.per;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassPer += equipment.per / 2;
+    }
+  }
+  
+  return equipmentAndClassPer;
+}
+
+// Checks if sufficient mana, sends message if not
+function checkMana(mp, mpCost){
+  if (mp < mpCost) {
+    api_sendPrivateMessage({"message" : "Insufficient mana to use this skill.", "toUserId" : USER_ID});
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
+// Changes stats
+function api_updateUser(payload) { 
+  const params = {
+    "method" : "put",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload),
+    "muteHttpExceptions" : true,
+  }
+  
+  const url = "https://habitica.com/api/v3/user";
+  return UrlFetchApp.fetch(url, params);
+}
+
+function getTaskValue(version, presetTaskValue, taskId) {
+  switch (version){
+        case 2:
+          var value = sanitizeTaskValue(presetTaskValue);
+          return value;
+          break;        
+        case 3:
+          const responseV3 = api_getUserTasks("dailys");
+          const tasksV3 = JSON.parse(responseV3).data;
+          
+          // loop over all Dailies, then average the task value
+          var taskCount = 0;
+          var taskValueTotal = 0;
+          for (var i in tasksV3) {
+            taskValueTotal += tasksV3[i].value;
+            taskCount++;
+          }
+          var average = sanitizeTaskValue(taskValueTotal/taskCount);
+          return average;
+          break;
+        case 4:
+          const responseV4 = api_getUserTasks("dailys");
+          const tasksV4 = JSON.parse(responseV4).data;
+          var valueV4 = -1;
+          
+          for (var j in tasksV4) {
+            if (tasksV4[j]._id == taskId) {
+              valueV4 = tasksV4[j].value;
+            }
+          }
+          
+          if (valueV4 == -1) {
+            api_sendPrivateMessageAlways({"message" : "Task ID not found, so this script defaulted to the [preset task value](URL). To find task value, see the [wiki page](URL) and then update the script using the [instructions](URL).", "toUserId" : USER_ID});
+            var valueIfError = sanitizeTaskValue(presetTaskValue);
+            return valueIfError;
+            break;
+          }
+          else {
+            // grab value of task ID
+            var valueById = sanitizeTaskValue(valueV4);
+            return valueById;
+            break;
+          }
+  }
+}
+
+function sanitizeTaskValue(value) {
+  if (value < 0) {
+    return 0;
+  }
+  else if (value > 21.27) {
+    return 21.27;
+  }
+  else {
+    return value;
+  }
+}
+
+function api_getUserTasks(type) {
+  const params = {
+    "method" : "get",
+    "headers" : HEADERS,
+    "muteHttpExceptions" : true,
+  }
+  
+  var url = "https://habitica.com/api/v3/tasks/user";
+  if (type != "") {
+    url += "?type=" + type;
+  }
+
+  return UrlFetchApp.fetch(url, params);
+}
+
+function criticalHit (stat, chance) {
+  var targetToBeat = chance * ( (1 + stat ) / 100 );
+  if (Math.random() <= targetToBeat) {
+    return (1.5 +  ( 4 * stat ) / ( stat + 200 ) );
+  }
+  else {
+    return 1;
+  }
+}
+
+function pickpocket (version, presetTaskValue, taskId, gp, per) {
+  var taskValue = getTaskValue(version, presetTaskValue, taskId);
+  var bonus = ( (taskValue + 1) / (per * 0.5 ) );
+  var newGp = ( ( 25 * bonus ) / ( bonus + 75) );
+  var startingGp = gp;
+  
+  api_updateUser({"stats.gp" : startingGp + newGp});
+}
+
+function backstab (version, presetTaskValue, taskId, gp, xp, str) {
+  var multiplier = criticalHit(str, 0.3);
+  var taskValue = getTaskValue(version, presetTaskValue, taskId);
+  var bonus = ( ( (taskValue + 1) / (str * 0.5 ) ) * multiplier ) ;
+  var newXp = ( ( 75 * bonus ) / ( bonus + 50) );
+  var newGp = ( ( 18 * bonus ) / ( bonus + 75) );
+  var startingXp = xp;
+  var startingGp = gp;
+
+  api_updateUser({"stats.gp" : startingGp + newGp, "stats.exp" : startingXp + newXp});
+}
+
+function stealth (totalDailies, prevStealthedDailies, per) {
+  var newDailiesDodged = Math.ceil( ( 0.64 * totalDailies * ( per / (per + 55) ) ) );
+  
+  // If they'd Stealth more than total Dailies, instead only Stealth the total
+  if ( ( prevStealthedDailies + newDailiesDodged ) >= totalDailies ) {
+    api_updateUser({"stats.buffs.stealth" : totalDailies});
+  }
+  else {
+    api_updateUser({"stats.buffs.stealth" : prevStealthedDailies + newDailiesDodged});
+  }
+  
+  // something for if it's already maxed
+  api_sendPrivateMessageAlways(payload);
+}
+
+function healingLight (hp, con, int) {
+  var healing = ( ( con + int + 5 ) * 0.075 );
+  if (hp + healing >= 50) {
+    api_updateUser({"stats.hp" : 50});
+  }
+  else {
+    api_updateUser({"stats.hp" : hp + healing});
+  }
+}
+
+function chillingFrost() {
+  api_updateUser({"stats.buffs.streaks" : true});
+}
+
+function burstOfFlames (version, presetTaskValue, taskId, xp, int, per) {
+  var multiplier = criticalHit(per, 0.03);
+  var taskValue = getTaskValue(version, presetTaskValue, taskId);
+  var bonus = Math.ceil( ( (taskValue + 1) / (int * 0.075 ) ) * multiplier ) ;
+  var newXp = ( ( 75 * bonus ) / ( bonus + 37.5) );
+  var startingXp = xp;
+
+  api_updateUser({"stats.exp" : startingXp + newXp});
+}
