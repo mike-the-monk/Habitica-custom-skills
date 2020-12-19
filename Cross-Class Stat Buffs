@@ -637,7 +637,7 @@ function calculateUnbuffedStrength() {
   var totalEquipmentAndClassStr = 0;
   const allocatedStr = user.stats.str;
   
-  // Get INT from equipped gear
+  // Get STR from equipped gear
   totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.weapon]);
   totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.shield]);
   totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.head]);
@@ -699,7 +699,7 @@ function calculateUnbuffedConstitution() {
   var totalEquipmentAndClassCon = 0;
   const allocatedCon = user.stats.con;
   
-  // Get INT from equipped gear
+  // Get CON from equipped gear
   totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.weapon]);
   totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.shield]);
   totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.head]);
@@ -730,7 +730,7 @@ function calculateUnbuffedPerception() {
   var totalEquipmentAndClassPer = 0;
   const allocatedPer = user.stats.per;
   
-  // Get INT from equipped gear
+  // Get PER from equipped gear
   totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.weapon]);
   totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.shield]);
   totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.head]);
