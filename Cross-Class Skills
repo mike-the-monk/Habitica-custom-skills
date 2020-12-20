@@ -638,7 +638,7 @@ function getTaskValue(version, presetTaskValue, taskId) {
         case 4:
           const responseV4 = api_getUserTasks("dailys");
           const tasksV4 = JSON.parse(responseV4).data;
-          var valueV4 = -1;
+          var valueV4 = -100;
           
           for (var j in tasksV4) {
             if (tasksV4[j]._id == taskId) {
@@ -646,8 +646,8 @@ function getTaskValue(version, presetTaskValue, taskId) {
             }
           }
           
-          if (valueV4 == -1) {
-            api_sendPrivateMessageAlways({"message" : "Task ID not found, so this script defaulted to the [preset task value](URL). To find task value, see the [wiki page](URL) and then update the script using the [instructions](URL).", "toUserId" : USER_ID});
+          if (valueV4 == -100) {
+            api_sendPrivateMessageAlways({"message" : "Task ID not found, so this script defaulted to the preset task value (version 2 in the Required Customization section). To find task value, see the [wiki page](https://habitica.fandom.com/wiki/Google_Apps_Script#Cross-Class_Skills) section on Required Customizations and then update the script using the instructions at the bottom of the wiki page.", "toUserId" : USER_ID});
             var valueIfError = sanitizeTaskValue(presetTaskValue);
             return valueIfError;
             break;
