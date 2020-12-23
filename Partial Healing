@@ -17,7 +17,7 @@ const WEB_APP_URL = "PasteGeneratedWebAppUrlHere";
 // If you want to heal a percent of your remaining health (such as 25%), select 3.
 const VERSION = 2;
 
-// How much HP do you want to gain each level-up? Fill in only the correct one if you picked 2 or 3 above
+// How much HP do you want to gain each level-up? Fill in the correct one (set value or percent of remaining health)
 const HP_SET_VALUE_PER_LEVEL = 4.5; // Enter a number between 0 and 50.
 const HP_PERCENT_PER_LEVEL = 50.0; // Do not put a percent sign after the number here. Enter a number between 0 and 100.
 
@@ -25,7 +25,6 @@ const HP_PERCENT_PER_LEVEL = 50.0; // Do not put a percent sign after the number
 /* [Users] Optional customizations to fill in */
 /* ========================================== */
 
-const NOTIFICATIONS_ON = 1; 
 /* ========================================== */
 /* [Users] Do not edit code below this line   */
 /* ========================================== */
