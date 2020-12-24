@@ -1,0 +1,250 @@
+// This code is licensed under the same terms as Habitica:
+  // https://raw.githubusercontent.com/HabitRPG/habitrpg/develop/LICENSE
+
+/* ========================================== */
+/* [Users] Required script data to fill in    */
+/* ========================================== */
+const USER_ID = "f2d3eaf9-d54a-4001-919d-ee9b8d4884f5";
+const API_TOKEN = "f9df13e9-1066-4212-8f12-b997ebc5bcd6"; // Do not share this to anyone
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwiu6l94CpHW2B9D0imHbalYzvARZ8LSPOwRM_7uWmjeUbG5TwP/exec";
+
+/* ========================================== */
+/* [Users] Required customizations to fill in */
+/* ========================================== */
+
+/* ========================================== */
+/* [Users] Optional customizations to fill in */
+/* ========================================== */
+
+const NOTIFICATIONS_ON = 1; 
+
+/* ========================================== */
+/* [Users] Do not edit code below this line   */
+/* ========================================== */
+const AUTHOR_ID = "0034eb14-b4d8-494e-8386-d3f33cff7922";
+const SCRIPT_NAME = "boss damage – testing some things";
+const HEADERS = {
+  "x-client" : AUTHOR_ID + "-" + SCRIPT_NAME,
+  "x-api-user" : USER_ID,
+  "x-api-key" : API_TOKEN,
+}
+
+const TEST_TEXT = "**trigger test**";
+const TEST_ALIAS = "test";
+const TEST_NOTES = "triggers whatever I'm testing";
+const TEST_VALUE = "0";
+
+const TEST_BUTTON = {
+    "text": TEST_TEXT,
+    "type": "reward",
+    "alias": TEST_ALIAS,
+    "notes": TEST_NOTES,
+    "value": TEST_VALUE,
+}
+
+const DAMAGE_TEXT = "**boss damage**";
+const DAMAGE_ALIAS = "damage8";
+const DAMAGE_NOTES = "used to create boss damage";
+const DAMAGE_DIFFICULTY = 2;
+
+const DAMAGE_BUTTON = {
+    "text": DAMAGE_TEXT,
+    "type": "todo",
+    "alias": DAMAGE_ALIAS,
+    "notes": DAMAGE_NOTES,
+    "priority": DAMAGE_DIFFICULTY,
+}
+
+function doOneTimeSetup() { 
+  api_createNewTaskForUser([TEST_BUTTON]);
+  // create the webhook
+  const options = {
+    "scored" : true,
+  }
+  const payload = {
+    "url" : WEB_APP_URL,
+    "label" : SCRIPT_NAME + " Webhook",
+    "type" : "taskActivity",
+    "options" : options,
+  }
+  apiMult_createNewWebhookNoDuplicates(payload);
+}
+
+// do things when the webhook runs
+function doPost(e) {
+  const dataContents = JSON.parse(e.postData.contents);
+  const type = dataContents.type;
+  const task = dataContents.task;
+  
+  // Sanitize task alias
+  if ((task.alias == undefined) || (task.alias == null)) {
+    task.alias = "";
+  }
+  
+  if ( (type == "scored") && (task.alias == TEST_ALIAS) ) {
+    // Create To-Do
+    api_createNewTaskForUser(DAMAGE_BUTTON);
+    
+    // Add some number of checklist items
+    var numberOfItemsToAdd = 5;
+    for (i = 1; i <= numberOfItemsToAdd; i++) {
+      var message = "item " + i;
+      api_addItemToTaskChecklist(DAMAGE_ALIAS, {"text": message});
+    }
+    
+    //add back in after I figure out how to score each checklist item. api_scoreTask(DAMAGE_ALIAS, "up");
+  }
+  return HtmlService.createHtmlOutput();
+}
+
+// Create task
+function api_createNewTaskForUser(payload) {
+  var params = {
+    "method" : "post",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload), // Rightmost button goes on top
+    "muteHttpExceptions" : true,
+  }
+
+  var url = "https://habitica.com/api/v3/tasks/user";
+  UrlFetchApp.fetch(url, params);
+}
+
+// Create a webhook if no duplicate exists
+function apiMult_createNewWebhookNoDuplicates(payload) {
+  const response = api_getWebhooks();
+  const webhooks = JSON.parse(response).data;
+  var duplicateExists = 0;
+    
+  for (var i in webhooks) {
+    if (webhooks[i].label == payload.label) {
+      duplicateExists = 1;
+    }
+  }
+  // If webhook to be created doesn't exist yet
+  if (!duplicateExists) {
+    api_createNewWebhook(payload);
+  }
+}
+
+// Used to see existing webhooks, and therefore if there's a duplicate
+function api_getWebhooks() {
+  const params = {
+    "method" : "get",
+    "headers" : HEADERS,
+    "muteHttpExceptions" : true,
+  }
+  
+  const url = "https://habitica.com/api/v3/user/webhook";
+  return UrlFetchApp.fetch(url, params);
+}
+
+// Creates a webhook (as part of the "don't make it if there's a duplicate" function)
+function api_createNewWebhook(payload) {
+  const params = {
+    "method" : "post",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload),
+    "muteHttpExceptions" : true,
+  }
+   
+  const url = "https://habitica.com/api/v3/user/webhook";
+  return UrlFetchApp.fetch(url, params);
+}
+
+// Score a task
+function api_scoreTask(aliasOrId, direction) {
+  var params = {
+    "method" : "post",
+    "headers" : HEADERS,
+    "muteHttpExceptions" : true,
+  }
+
+  var url = "https://habitica.com/api/v3/tasks/";
+  if ( (aliasOrId != "") && (direction != "") ) {
+    url += aliasOrId + "/score/" + direction;
+  }
+  UrlFetchApp.fetch(url, params);
+}
+
+// Add an item to checklist
+function api_addItemToTaskChecklist(aliasOrId, payload) {
+  var params = {
+    "method" : "post",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload),
+    "muteHttpExceptions" : true,
+  }
+
+  var url = "https://habitica.com/api/v3/tasks/";
+  if (aliasOrId != "") {
+    url += aliasOrId + "/checklist";
+  }
+  UrlFetchApp.fetch(url, params);
+}
+
+function api_getUserTasks(type) {
+  const params = {
+    "method" : "get",
+    "headers" : HEADERS,
+    "muteHttpExceptions" : true,
+  }
+  
+  var url = "https://habitica.com/api/v3/tasks/user";
+  if (type != "") {
+    url += "?type=" + type;
+  }
+
+  return UrlFetchApp.fetch(url, params);
+}
+
+// Gets user info so I can use it, especially stats like mana, experience, and level
+function api_getAuthenticatedUserProfile(userFields) {
+  const params = {
+    "method" : "get",
+    "headers" : HEADERS,
+    "muteHttpExceptions" : true,
+  }
+  
+  var url = "https://habitica.com/api/v3/user";
+  if (userFields != "") {
+    url += "?userFields=" + userFields;
+  }
+
+  return UrlFetchApp.fetch(url, params);
+}
+
+function api_updateUser(payload) { 
+  const params = {
+    "method" : "put",
+    "headers" : HEADERS,
+    "contentType" : "application/json",
+    "payload" : JSON.stringify(payload),
+    "muteHttpExceptions" : true,
+  }
+  
+  const url = "https://habitica.com/api/v3/user";
+  return UrlFetchApp.fetch(url, params);
+}
+
+// Send a notification as a private message, only if they're enabled
+function api_sendPrivateMessage(payload) {
+  switch (NOTIFICATIONS_ON){ // Check if notifications are on, send message if yes
+        case 0:
+          break;        
+        case 1:
+            const params = {
+              "method" : "post",
+              "headers" : HEADERS,
+              "contentType" : "application/json",
+              "payload" : JSON.stringify(payload),
+              "muteHttpExceptions" : true,
+            }
+            const url = "https://habitica.com/api/v3/members/send-private-message";
+            return UrlFetchApp.fetch(url, params);
+          break;
+  }
+}
