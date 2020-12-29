@@ -22,12 +22,32 @@ const NOTIFICATIONS_ON = 1;
 /* [Users] Do not edit code below this line   */
 /* ========================================== */
 const AUTHOR_ID = "0034eb14-b4d8-494e-8386-d3f33cff7922";
-const SCRIPT_NAME = "boss damage – testing some things";
+const SCRIPT_NAME = "boss damage – testing multi-cast";
 const HEADERS = {
   "x-client" : AUTHOR_ID + "-" + SCRIPT_NAME,
   "x-api-user" : USER_ID,
   "x-api-key" : API_TOKEN,
 }
+
+const scriptProperties = PropertiesService.getScriptProperties(); // Constants can have properties changed
+
+const STR_BUFF_KEY = "STR_BUFF_KEY";
+const INT_BUFF_KEY = "INT_BUFF_KEY";
+const PER_BUFF_KEY = "PER_BUFF_KEY";
+const LVL_KEY = "LVL_KEY";
+const MP_KEY = "MP_KEY";
+const HP_KEY = "HP_KEY";
+const XP_KEY = "XP_KEY";
+const GP_KEY = "GP_KEY";
+
+var strBuffKey = "";
+var intBuffKey = "";
+var perBuffKey = "";
+var lvlKey = "";
+var mpKey = "";
+var hpKey = "";
+var xpKey = "";
+var gpKey = "";
 
 const TEST_TEXT = "**trigger test**";
 const TEST_ALIAS = "test";
@@ -43,16 +63,13 @@ const TEST_BUTTON = {
 }
 
 const DAMAGE_TEXT = "**boss damage**";
-const DAMAGE_ALIAS = "damage8";
-const DAMAGE_NOTES = "used to create boss damage";
-const DAMAGE_DIFFICULTY = 2;
+const DAMAGE_NOTES = "used to create boss damage, test2";
 
 const DAMAGE_BUTTON = {
     "text": DAMAGE_TEXT,
     "type": "todo",
-    "alias": DAMAGE_ALIAS,
     "notes": DAMAGE_NOTES,
-    "priority": DAMAGE_DIFFICULTY,
+    "priority": 0.1,
 }
 
 function doOneTimeSetup() { 
@@ -68,6 +85,8 @@ function doOneTimeSetup() {
     "options" : options,
   }
   apiMult_createNewWebhookNoDuplicates(payload);
+  
+  initScriptProperties();
 }
 
 // do things when the webhook runs
@@ -82,17 +101,84 @@ function doPost(e) {
   }
   
   if ( (type == "scored") && (task.alias == TEST_ALIAS) ) {
-    // Create To-Do
-    api_createNewTaskForUser(DAMAGE_BUTTON);
+    var strBuffKey = STR_BUFF_KEY;
+    var intBuffKey = INT_BUFF_KEY;
+    var perBuffKey = PER_BUFF_KEY;
+    var lvlKey = LVL_KEY;
+    var mpKey = MP_KEY;
+    var hpKey = HP_KEY;
+    var xpKey = XP_KEY;
+    var gpKey = GP_KEY;  
     
-    // Add some number of checklist items
-    var numberOfItemsToAdd = 5;
-    for (i = 1; i <= numberOfItemsToAdd; i++) {
-      var message = "item " + i;
-      api_addItemToTaskChecklist(DAMAGE_ALIAS, {"text": message});
+    const responseUser = api_getAuthenticatedUserProfile("stats,items.gear.equipped");
+    user = JSON.parse(responseUser).data;
+    
+    const responseContent = apiFree_getAllAvailableContentObjects();
+    content = JSON.parse(responseContent).data;
+    
+    var str = calculateStrength();
+    var int = calculateIntelligence();
+    var con = calculateConstitution();
+    var per = calculatePerception();
+    
+    var strBuff = user.stats.buffs.str;
+    var intBuff = user.stats.buffs.int;
+    var perBuff = user.stats.buffs.per;
+    
+    var unbuffedStr = str - strBuff;
+    var unbuffedInt = int - intBuff;
+    var unbuffedPer = per - perBuff;
+    
+    var lvl = user.stats.lvl;
+    var mp = user.stats.mp;
+    var hp = user.stats.hp;
+    var xp = user.stats.exp;
+    var gp = user.stats.gp;
+    
+    // Save values to non-volatile memory so I can revert back after doing damage
+    scriptProperties.setProperty(strBuffKey, strBuff)
+    scriptProperties.setProperty(intBuffKey, intBuff);
+    scriptProperties.setProperty(perBuffKey, perBuff);
+    scriptProperties.setProperty(lvlKey, lvl);
+    scriptProperties.setProperty(mpKey, mp);
+    scriptProperties.setProperty(hpKey, hp);
+    scriptProperties.setProperty(xpKey, xp);
+    scriptProperties.setProperty(gpKey, gp);
+    
+    var flames = flamesDamage (int);
+    var smash = smashDamage (str, con);
+    
+    // Set INT and PER to 0
+    api_updateUser({"stats.buffs.int" : (-1 * unbuffedInt) , "stats.buffs.per" : (-1 * unbuffedPer), });
+    
+    api_sendPrivateMessage({"message" : "Base Smash damage" + smash, "toUserId" : USER_ID});
+    
+    // Damage is unreliable below 77.49 (due to crit probability), so do multi-use of skills only
+    var howManyUsesNeeded = Math.ceil(77.49 / smash); 
+    var expectedDamage = howManyUsesNeeded * smash;
+    
+    api_sendPrivateMessage({"message" : "Uses needed: " + howManyUsesNeeded, "toUserId" : USER_ID});
+    api_sendPrivateMessage({"message" : "Expected damage is " + expectedDamage, "toUserId" : USER_ID});
+    
+    if (expectedDamage >= 77.49) {
+      damageHigh(expectedDamage, unbuffedStr);
     }
     
-    //add back in after I figure out how to score each checklist item. api_scoreTask(DAMAGE_ALIAS, "up");
+    
+    
+    // Revert all stats back to their saved values
+    strBuff = Number(scriptProperties.getProperty(strBuffKey));
+    intBuff = Number(scriptProperties.getProperty(intBuffKey));
+    perBuff = Number(scriptProperties.getProperty(perBuffKey));
+    lvl = Number(scriptProperties.getProperty(lvlKey));
+    mp = Number(scriptProperties.getProperty(mpKey));
+    hp = Number(scriptProperties.getProperty(hpKey));
+    xp = Number(scriptProperties.getProperty(xpKey));
+    gp = Number(scriptProperties.getProperty(gpKey));
+    
+    // do API Update user to set everything to the above
+    api_updateUser({"stats.buffs.str" : strBuff, "stats.buffs.int" : intBuff, "stats.buffs.per" : perBuff, "stats.lvl" : lvl, "stats.mp" : mp, "stats.hp" : hp, "stats.exp" : xp, "stats.gp" : gp});
+    
   }
   return HtmlService.createHtmlOutput();
 }
@@ -154,6 +240,18 @@ function api_createNewWebhook(payload) {
   return UrlFetchApp.fetch(url, params);
 }
 
+// Initialize values
+function initScriptProperties() {
+  scriptProperties.setProperty(STR_BUFF_KEY, 0);
+  scriptProperties.setProperty(INT_BUFF_KEY, 0);
+  scriptProperties.setProperty(PER_BUFF_KEY, 0);
+  scriptProperties.setProperty(LVL_KEY, 0);
+  scriptProperties.setProperty(MP_KEY, 0);
+  scriptProperties.setProperty(HP_KEY, 0);
+  scriptProperties.setProperty(XP_KEY, 0);
+  scriptProperties.setProperty(GP_KEY, 0);
+}
+
 // Score a task
 function api_scoreTask(aliasOrId, direction) {
   var params = {
@@ -166,24 +264,7 @@ function api_scoreTask(aliasOrId, direction) {
   if ( (aliasOrId != "") && (direction != "") ) {
     url += aliasOrId + "/score/" + direction;
   }
-  UrlFetchApp.fetch(url, params);
-}
-
-// Add an item to checklist
-function api_addItemToTaskChecklist(aliasOrId, payload) {
-  var params = {
-    "method" : "post",
-    "headers" : HEADERS,
-    "contentType" : "application/json",
-    "payload" : JSON.stringify(payload),
-    "muteHttpExceptions" : true,
-  }
-
-  var url = "https://habitica.com/api/v3/tasks/";
-  if (aliasOrId != "") {
-    url += aliasOrId + "/checklist";
-  }
-  UrlFetchApp.fetch(url, params);
+  return UrlFetchApp.fetch(url, params);
 }
 
 function api_getUserTasks(type) {
@@ -199,6 +280,55 @@ function api_getUserTasks(type) {
   }
 
   return UrlFetchApp.fetch(url, params);
+}
+
+// Expected damage for Burst of Flames
+function flamesDamage (int) {
+  return Math.ceil(int/10);
+}
+
+// Expected damage for Brutal Smash
+function smashDamage (str, con) {
+  var multiplier = criticalHit(con, 0.03);
+  var bonus = str * multiplier;
+  return (55*bonus)/(bonus+70);
+}
+
+function criticalHit (stat, chance) {
+  var targetToBeat = chance * ( (1 + stat ) / 100 );
+  if (Math.random() <= targetToBeat) {
+    return (1.5 +  ( 4 * stat ) / ( stat + 200 ) );
+  }
+  else {
+    return 1;
+  }
+}
+
+// Damage for when critical hit on task is guaranteed (damage >= 77.49, STR >= 3244)
+function damageHigh(expectedDamage, unbuffedStr) {
+  // since crit is guaranteed and crit multiplier is capped at 4.5 and task value delta for a new task (value 0) is 1, damage is 4.5*(1+(str*0.005))
+  // to calculate what amount of STR is needed to do the expected amount of damage, do algebra. The result is STR = (damage-4.5)/0.0225
+  
+  var strSetpoint = Math.ceil( (expectedDamage - 4.5) / (0.0225) );
+  api_updateUser({"stats.buffs.str" : (strSetpoint - unbuffedStr)}); // set STR to setpoint
+  
+  api_sendPrivateMessage({"message" : "STR setpoint is " + strSetpoint, "toUserId" : USER_ID});
+  
+  // Create one To-Do and check it off.
+  api_createNewTaskForUser(DAMAGE_BUTTON);
+  
+  // pause for 1 second to give the script enough time between creating the task and scoring it
+  Utilities.sleep(1000);
+  
+  const responseTaskHigh = api_getUserTasks("todos");
+  const tasksForDamageHigh = JSON.parse(responseTaskHigh).data;
+  var taskIdForDamageHigh = "";
+  for (var j in tasksForDamageHigh) {
+    if ( (tasksForDamageHigh[j].text == DAMAGE_TEXT) && (tasksForDamageHigh[j].notes == DAMAGE_NOTES) ) {
+      taskIdForDamageHigh = tasksForDamageHigh[j]._id;
+      api_scoreTask(taskIdForDamageHigh, "up");
+    }
+  }
 }
 
 // Gets user info so I can use it, especially stats like mana, experience, and level
@@ -217,6 +347,16 @@ function api_getAuthenticatedUserProfile(userFields) {
   return UrlFetchApp.fetch(url, params);
 }
 
+function apiFree_getAllAvailableContentObjects() {
+  const params = {
+    "method" : "get",
+    "muteHttpExceptions" : true,
+  }
+  
+  const url = "https://habitica.com/api/v3/content";
+  return UrlFetchApp.fetch(url, params);
+}
+
 function api_updateUser(payload) { 
   const params = {
     "method" : "put",
@@ -228,6 +368,134 @@ function api_updateUser(payload) {
   
   const url = "https://habitica.com/api/v3/user";
   return UrlFetchApp.fetch(url, params);
+}
+
+function calculateStrength() {
+  const levelStr = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassStr = 0;
+  const allocatedStr = user.stats.str;
+  const buffsStr = user.stats.buffs.str;
+  
+  // Get STR from equipped gear
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassStr += calcEquipmentAndClassStr(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelStr + totalEquipmentAndClassStr + allocatedStr + buffsStr;
+}
+
+function calcEquipmentAndClassStr(equipment) {
+  var equipmentAndClassStr = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassStr += equipment.str;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassStr += equipment.str / 2;
+    }
+  }
+  
+  return equipmentAndClassStr;
+}
+
+function calculateIntelligence() {
+  const levelInt = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassInt = 0;
+  const allocatedInt = user.stats.int;
+  const buffsInt = user.stats.buffs.int;
+
+  // Get INT from equipped gear
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassInt += calcEquipmentAndClassInt(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelInt + totalEquipmentAndClassInt + allocatedInt + buffsInt;
+}
+
+function calcEquipmentAndClassInt(equipment) {
+  var equipmentAndClassInt = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassInt += equipment.int;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassInt += equipment.int / 2;
+    }
+  }
+  
+  return equipmentAndClassInt;
+}
+
+function calculateConstitution() {
+  const levelCon = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassCon = 0;
+  const allocatedCon = user.stats.con;
+  const buffsCon = user.stats.buffs.con;
+  
+  // Get CON from equipped gear
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassCon += calcEquipmentAndClassCon(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelCon + totalEquipmentAndClassCon + allocatedCon + buffsCon;
+}
+
+function calcEquipmentAndClassCon(equipment) {
+  var equipmentAndClassCon = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassCon += equipment.con;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassCon += equipment.con / 2;
+    }
+  }
+  
+  return equipmentAndClassCon;
+}
+
+function calculatePerception() {
+  const levelPer = Math.floor(user.stats.lvl / 2);
+  var totalEquipmentAndClassPer = 0;
+  const allocatedPer = user.stats.per;
+  const buffsPer = user.stats.buffs.per;
+  
+  // Get PER from equipped gear
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.weapon]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.shield]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.head]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.armor]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.headAccessory]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.eyewear]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.body]);
+  totalEquipmentAndClassPer += calcEquipmentAndClassPer(content.gear.flat[user.items.gear.equipped.back]);
+
+  return levelPer + totalEquipmentAndClassPer + allocatedPer + buffsPer;
+}
+
+function calcEquipmentAndClassPer(equipment) {
+  var equipmentAndClassPer = 0;
+
+  if (equipment != undefined) {  
+    equipmentAndClassPer += equipment.per;
+    if (equipment.klass == user.stats.class) {
+      equipmentAndClassPer += equipment.per / 2;
+    }
+  }
+  
+  return equipmentAndClassPer;
 }
 
 // Send a notification as a private message, only if they're enabled
