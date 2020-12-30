@@ -123,12 +123,11 @@ function doPost(e) {
   }
   
   if ( (type == "scored") && ( (task.alias == HP_FOR_MP_ALIAS) || (task.alias == XP_FOR_MP_ALIAS) ) ) {
+    var timestampKey = TIMESTAMP_KEY;
     var timeStart = Number(scriptProperties.getProperty(timestampKey));
-    
     if ( (timeStart == 0) || (timeStart == "") ) {
       timeStart = Date.now();
     }
-    
     var timeEnd = Date.now();
     
     // Rate limiting: If it's been less than 30 seconds since they last clicked one of these buttons, do nothing
