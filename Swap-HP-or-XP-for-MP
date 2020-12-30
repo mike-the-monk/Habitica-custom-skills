@@ -131,13 +131,7 @@ function doPost(e) {
     var timeEnd = Date.now();
     
     // Rate limiting: If it's been less than 30 seconds since they last clicked one of these buttons, do nothing
-    if ( (timeEnd - timeStart) < 30000 ) {
-      timeStart = timeEnd;
-      
-      // Save values to non-volatile memory
-      scriptProperties.setProperty(timestampKey, timeStart);
-    }
-    else {   
+    if ( (timeEnd - timeStart) >= 30000 ) {
       // Run all the things that run regardless of the skill
       const responseUser = api_getAuthenticatedUserProfile("stats,items.gear.equipped,flags.cronCount");
       user = JSON.parse(responseUser).data;
