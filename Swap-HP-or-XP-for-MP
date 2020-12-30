@@ -123,7 +123,6 @@ function doPost(e) {
   }
   
   if ( (type == "scored") && ( (task.alias == HP_FOR_MP_ALIAS) || (task.alias == XP_FOR_MP_ALIAS) ) ) {
-    // First, run all the things that run regardless of the skill
     var timeStart = Number(scriptProperties.getProperty(timestampKey));
     
     if ( (timeStart == 0) || (timeStart == "") ) {
@@ -140,6 +139,7 @@ function doPost(e) {
       scriptProperties.setProperty(timestampKey, timeStart);
     }
     else {   
+      // Run all the things that run regardless of the skill
       const responseUser = api_getAuthenticatedUserProfile("stats,items.gear.equipped,flags.cronCount");
       user = JSON.parse(responseUser).data;
     
