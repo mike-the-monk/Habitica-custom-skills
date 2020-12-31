@@ -125,7 +125,7 @@ function doPost(e) {
   if ( (type == "scored") && ( (task.alias == HP_FOR_MP_ALIAS) || (task.alias == XP_FOR_MP_ALIAS) ) ) {
     var timestampKey = TIMESTAMP_KEY;
     var timeStart = Number(scriptProperties.getProperty(timestampKey));
-    if ( (timeStart == 0) || (timeStart == "") ) {
+    if ( (timeStart == 0) || (timeStart == "") || (timeStart == undefined) || timeStart == null) ) {
       timeStart = Date.now();
     }
     var timeEnd = Date.now();
@@ -316,10 +316,11 @@ function api_createNewWebhook(payload) {
 
 // Sets initial properties that will be used/saved later.
 function initScriptProperties() {
+  var timestampInit = Date.now();
   scriptProperties.setProperty(CRON_COUNT_KEY, 0);
   scriptProperties.setProperty(HP_FOR_MP_KEY, 0);
   scriptProperties.setProperty(XP_FOR_MP_KEY, 0);
-  scriptProperties.setProperty(TIMESTAMP_KEY, 0);
+  scriptProperties.setProperty(TIMESTAMP_KEY, timestampInit);
 }
 
 // Gets user info so I can use it, especially stats like mana, experience, and level
