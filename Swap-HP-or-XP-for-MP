@@ -125,7 +125,7 @@ function doPost(e) {
   if ( (type == "scored") && ( (task.alias == HP_FOR_MP_ALIAS) || (task.alias == XP_FOR_MP_ALIAS) ) ) {
     var timestampKey = TIMESTAMP_KEY;
     var timeStart = Number(scriptProperties.getProperty(timestampKey));
-    if ( (timeStart == 0) || (timeStart == "") || (timeStart == undefined) || timeStart == null) ) {
+    if ( (timeStart == 0) || (timeStart == "") || (timeStart == undefined) || (timeStart == null) ) {
       timeStart = Date.now();
     }
     var timeEnd = Date.now();
