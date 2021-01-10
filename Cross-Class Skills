@@ -79,6 +79,8 @@ const HEADERS = {
   "x-api-key" : API_TOKEN,
 }
 
+const scriptProperties = PropertiesService.getScriptProperties(); // Constants can have properties changed
+
 const LEVEL_LOCK_PICKPOCKET = 11;
 const LEVEL_LOCK_BACKSTAB = 12;
 const LEVEL_LOCK_STEALTH = 14;
@@ -171,6 +173,9 @@ const BURST_OF_FLAMES_BUTTON = {
     "value": BURST_OF_FLAMES_VALUE,
 }
 
+const TIMESTAMP_KEY = "TIMESTAMP_KEY";
+var timestampKey = "";
+
 function doOneTimeSetup() {
   // These are not "else if" statements on purpose
   if (CREATE_BURST_OF_FLAMES == 1) {
@@ -203,6 +208,9 @@ function doOneTimeSetup() {
     "options" : options,
   }
   apiMult_createNewWebhookNoDuplicates(payload);
+  
+  // set script properties so they carry over to next session
+  initScriptProperties();
 }
 
 // do things when the webhook runs
@@ -220,7 +228,17 @@ function doPost(e) {
     if ( (task.alias == PICKPOCKET_ALIAS) || (task.alias == BACKSTAB_ALIAS) || (task.alias == STEALTH_ALIAS) 
       || (task.alias == HEALING_LIGHT_ALIAS) || (task.alias == CHILLING_FROST_ALIAS)
       || (task.alias == BURST_OF_FLAMES_ALIAS) ) {
-        
+      
+      var timestampKey = TIMESTAMP_KEY;
+      var timeStart = Number(scriptProperties.getProperty(timestampKey));
+      if ( (timeStart == 0) || (timeStart == "") || (timeStart == undefined) || (timeStart == null) ) {
+        timeStart = Date.now();
+      }
+      var timeEnd = Date.now();
+      
+      // Rate limiting: If it's been less than 30 seconds since they last clicked one of these buttons, do nothing
+      if ( (timeEnd - timeStart) >= 30000 ) {
+      
         // Get user info
         const responseUser = api_getAuthenticatedUserProfile("stats,tasksOrder,items.gear.equipped");
         user = JSON.parse(responseUser).data;
@@ -254,9 +272,7 @@ function doPost(e) {
             var enoughMana = checkMana(mp, MP_COST_PICKPOCKET);
             if (enoughMana) {
               // Subtract mana cost, and do the skill
-              api_updateUser({"stats.mp" : mp - MP_COST_PICKPOCKET});
-
-              pickpocket(PICKPOCKET_VERSION, PICKPOCKET_TASK_VALUE, PICKPOCKET_TASK_ID, gp, perception);
+              pickpocket(PICKPOCKET_VERSION, PICKPOCKET_TASK_VALUE, PICKPOCKET_TASK_ID, gp, perception, mp, MP_COST_PICKPOCKET);
             }
           }
         }
@@ -268,9 +284,7 @@ function doPost(e) {
             var enoughMana = checkMana(mp, MP_COST_BACKSTAB );
             if (enoughMana) {
               // Subtract mana cost, and do the skill
-              api_updateUser({"stats.mp" : mp - MP_COST_BACKSTAB });
-
-              backstab(BACKSTAB_VERSION, BACKSTAB_TASK_VALUE, BACKSTAB_TASK_ID, gp, xp, strength);
+              backstab(BACKSTAB_VERSION, BACKSTAB_TASK_VALUE, BACKSTAB_TASK_ID, gp, xp, strength, mp, MP_COST_BACKSTAB);
             }
           }
         }
@@ -287,8 +301,7 @@ function doPost(e) {
               }
               else {
                 // Subtract mana cost, and do the skill
-                api_updateUser({"stats.mp" : mp - MP_COST_STEALTH });
-                stealth (totalDailies, stealthedDailies, perception);
+                stealth (totalDailies, stealthedDailies, perception, mp, MP_COST_STEALTH);
               }
             }
           }
@@ -302,8 +315,7 @@ function doPost(e) {
             if (enoughMana) {
               // If at max HP, do nothing. Otherwise, subtract mana cost, and do the skill
               if (hp < 50) {
-                api_updateUser({"stats.mp" : mp - MP_COST_HEALING_LIGHT });
-                healingLight (hp, constitution, intelligence);
+                healingLight (hp, constitution, intelligence, mp, MP_COST_HEALING_LIGHT);
               }
             }
           }
@@ -321,8 +333,7 @@ function doPost(e) {
               }
               else {
                 // Subtract mana cost, and do the skill
-                api_updateUser({"stats.mp" : mp - MP_COST_CHILLING_FROST })
-                chillingFrost();
+                chillingFrost(mp, MP_COST_CHILLING_FROST);
               }
             }
           }
@@ -335,12 +346,14 @@ function doPost(e) {
             var enoughMana = checkMana(mp, MP_COST_BURST_OF_FLAMES );
             if (enoughMana) {
               // Subtract mana cost, and do the skill
-              api_updateUser({"stats.mp" : mp - MP_COST_BURST_OF_FLAMES })
-
-              burstOfFlames(BURST_OF_FLAMES_VERSION, BURST_OF_FLAMES_TASK_VALUE, BURST_OF_FLAMES_TASK_ID, xp, intelligence, perception); 
+              burstOfFlames(BURST_OF_FLAMES_VERSION, BURST_OF_FLAMES_TASK_VALUE, BURST_OF_FLAMES_TASK_ID, xp, intelligence, perception, mp, MP_COST_BURST_OF_FLAMES); 
             }
           }
         }
+      }
+      // Save values to non-volatile memory
+      timeStart = timeEnd;
+      scriptProperties.setProperty(timestampKey, timeStart);
     }
   }
   
@@ -402,6 +415,12 @@ function api_createNewWebhook(payload) {
    
   const url = "https://habitica.com/api/v3/user/webhook";
   return UrlFetchApp.fetch(url, params);
+}
+
+// Sets initial properties that will be used/saved later.
+function initScriptProperties() {
+  var timestampInit = Date.now();
+  scriptProperties.setProperty(TIMESTAMP_KEY, timestampInit);
 }
 
 // Gets user info so I can use it, especially stats like mana, experience, and level
@@ -698,16 +717,16 @@ function criticalHit (stat, chance) {
   }
 }
 
-function pickpocket (version, presetTaskValue, taskId, gp, per) {
+function pickpocket (version, presetTaskValue, taskId, gp, per, mp, mpCost) {
   var taskValue = getTaskValue(version, presetTaskValue, taskId);
   var bonus = ( (taskValue + 1) / (per * 0.5 ) );
   var newGp = ( ( 25 * bonus ) / ( bonus + 75) );
   var startingGp = gp;
   
-  api_updateUser({"stats.gp" : startingGp + newGp});
+  api_updateUser({"stats.gp" : startingGp + newGp, "stats.mp" : mp - mpCost});
 }
 
-function backstab (version, presetTaskValue, taskId, gp, xp, str) {
+function backstab (version, presetTaskValue, taskId, gp, xp, str, mp, mpCost) {
   var multiplier = criticalHit(str, 0.3);
   var taskValue = getTaskValue(version, presetTaskValue, taskId);
   var bonus = ( ( (taskValue + 1) / (str * 0.5 ) ) * multiplier ) ;
@@ -716,44 +735,43 @@ function backstab (version, presetTaskValue, taskId, gp, xp, str) {
   var startingXp = xp;
   var startingGp = gp;
 
-  api_updateUser({"stats.gp" : startingGp + newGp, "stats.exp" : startingXp + newXp});
+  api_updateUser({"stats.gp" : startingGp + newGp, "stats.exp" : startingXp + newXp, "stats.mp" : mp - mpCost});
 }
 
-function stealth (totalDailies, prevStealthedDailies, per) {
+function stealth (totalDailies, prevStealthedDailies, per, mp, mpCost) {
   var newDailiesDodged = Math.ceil( ( 0.64 * totalDailies * ( per / (per + 55) ) ) );
   
   // If they'd Stealth more than total Dailies, instead only Stealth the total
   if ( ( prevStealthedDailies + newDailiesDodged ) >= totalDailies ) {
-    api_updateUser({"stats.buffs.stealth" : totalDailies});
+    api_updateUser({"stats.buffs.stealth" : totalDailies, "stats.mp" : mp - mpCost});
   }
   else {
-    api_updateUser({"stats.buffs.stealth" : prevStealthedDailies + newDailiesDodged});
+    api_updateUser({"stats.buffs.stealth" : prevStealthedDailies + newDailiesDodged, "stats.mp" : mp - mpCost});
   }
   
-  // something for if it's already maxed
   api_sendPrivateMessageAlways(payload);
 }
 
-function healingLight (hp, con, int) {
+function healingLight (hp, con, int, mp, mpCost) {
   var healing = ( ( con + int + 5 ) * 0.075 );
   if (hp + healing >= 50) {
     api_updateUser({"stats.hp" : 50});
   }
   else {
-    api_updateUser({"stats.hp" : hp + healing});
+    api_updateUser({"stats.hp" : hp + healing, "stats.mp" : mp - mpCost});
   }
 }
 
-function chillingFrost() {
-  api_updateUser({"stats.buffs.streaks" : true});
+function chillingFrost(mp, mpCost) {
+  api_updateUser({"stats.buffs.streaks" : true, "stats.mp" : mp - mpCost});
 }
 
-function burstOfFlames (version, presetTaskValue, taskId, xp, int, per) {
+function burstOfFlames (version, presetTaskValue, taskId, xp, int, per, mp, mpCost) {
   var multiplier = criticalHit(per, 0.03);
   var taskValue = getTaskValue(version, presetTaskValue, taskId);
   var bonus = Math.ceil( ( (taskValue + 1) / (int * 0.075 ) ) * multiplier ) ;
   var newXp = ( ( 75 * bonus ) / ( bonus + 37.5) );
   var startingXp = xp;
 
-  api_updateUser({"stats.exp" : startingXp + newXp});
+  api_updateUser({"stats.exp" : startingXp + newXp, "stats.mp" : mp - mpCost});
 }
