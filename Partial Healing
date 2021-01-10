@@ -40,9 +40,11 @@ const scriptProperties = PropertiesService.getScriptProperties(); // Constants c
 
 const HP_KEY = "HP_KEY";
 const LVL_KEY = "LVL_KEY";
+const TIMESTAMP_KEY = "TIMESTAMP_KEY";
 
 var hpKey = "";
 var lvlKey = "";
+var timestampKey = "";
 
 function doOneTimeSetup() { 
   // create the webhook
@@ -67,53 +69,67 @@ function doPost(e) {
   const type = dataContents.type;
   
   if (type == "scored") {
-    var hpKey = HP_KEY;
-    var lvlKey = LVL_KEY;
-    
-    var prevHp = Number(scriptProperties.getProperty(hpKey));
-    var prevLvl = Number(scriptProperties.getProperty(lvlKey));
-    
-    const response = api_getAuthenticatedUserProfile("stats");
-    user = JSON.parse(response).data;
-    
-    var currentHp = user.stats.hp;
-    var currentLvl = user.stats.lvl;
-    
-    // See if they've leveled up
-    if (currentLvl > prevLvl) {
-      if ( VERSION == 2 ) {
-        var valueToHeal = sanitizeInput (HP_SET_VALUE_PER_LEVEL, 0, 50);
-        var newHp = valueToHeal + prevHp;
-        
-        if (newHp >= 50) { api_updateUser({"stats.hp" : 50}); }
-        else { api_updateUser({"stats.hp" : newHp}); }
-      
-        prevHp = user.stats.hp;        
-        prevLvl = user.stats.lvl;
-      }
-      else if ( VERSION == 3 ) {
-        var percentToHeal = sanitizeInput (HP_PERCENT_PER_LEVEL, 0, 100);
-        var healing = ( percentToHeal/ 100 ) * ( 50 - prevHp );
-        var newHpPercent = healing + prevHp;
-        
-        if (newHpPercent >= 50) { api_updateUser({"stats.hp" : 50}); }
-        else { api_updateUser({"stats.hp" : newHpPercent}); }
-      
-        prevHp = user.stats.hp;        
-        prevLvl = user.stats.lvl;
-      }
+    var timestampKey = TIMESTAMP_KEY;
+    var timeStart = Number(scriptProperties.getProperty(timestampKey));
+    if ( (timeStart == 0) || (timeStart == "") || (timeStart == undefined) || (timeStart == null) ) {
+      timeStart = Date.now();
     }
-    else {
-      // If previous and current HP are the same, no need to re-save
-      if (prevHp != currentHp) {
-        prevHp = currentHp;
+    var timeEnd = Date.now();
+    
+    // Rate limiting: only grab HP and LVL if it's been 5 seconds between clicks
+    if ( (timeEnd - timeStart) >= 5000 ) {
+    
+      var hpKey = HP_KEY;
+      var lvlKey = LVL_KEY;
+    
+      var prevHp = Number(scriptProperties.getProperty(hpKey));
+      var prevLvl = Number(scriptProperties.getProperty(lvlKey));
+    
+      const response = api_getAuthenticatedUserProfile("stats");
+      user = JSON.parse(response).data;
+    
+      var currentHp = user.stats.hp;
+      var currentLvl = user.stats.lvl;
+    
+      // See if they've leveled up
+      if (currentLvl > prevLvl) {
+        if ( VERSION == 2 ) {
+          var valueToHeal = sanitizeInput (HP_SET_VALUE_PER_LEVEL, 0, 50);
+          var newHp = valueToHeal + prevHp;
+        
+          if (newHp >= 50) { api_updateUser({"stats.hp" : 50}); }
+          else { api_updateUser({"stats.hp" : newHp}); }
+      
+          prevHp = user.stats.hp;        
+          prevLvl = user.stats.lvl;
+        }
+        else if ( VERSION == 3 ) {
+          var percentToHeal = sanitizeInput (HP_PERCENT_PER_LEVEL, 0, 100);
+          var healing = ( percentToHeal/ 100 ) * ( 50 - prevHp );
+          var newHpPercent = healing + prevHp;
+        
+          if (newHpPercent >= 50) { api_updateUser({"stats.hp" : 50}); }
+          else { api_updateUser({"stats.hp" : newHpPercent}); }
+      
+          prevHp = user.stats.hp;        
+          prevLvl = user.stats.lvl;
+        }
       }
+      else {
+        // If previous and current HP are the same, no need to re-save
+        if (prevHp != currentHp) {
+          prevHp = currentHp;
+        }
+      }
+      // Save values to non-volatile memory
+      timeStart = timeEnd;
+      scriptProperties.setProperty(hpKey, prevHp);
+      scriptProperties.setProperty(lvlKey, prevLvl);
+      scriptProperties.setProperty(timestampKey, timeStart);
+      
+      return HtmlService.createHtmlOutput();
     }
-    // Save values to non-volatile memory
-    scriptProperties.setProperty(hpKey, prevHp);
-    scriptProperties.setProperty(lvlKey, prevLvl);
   }
-  return HtmlService.createHtmlOutput();
 }
 
 // Create a webhook if no duplicate exists
@@ -177,8 +193,10 @@ function api_getAuthenticatedUserProfile(userFields) {
 
 // Sets initial properties that will be used/saved later.
 function initScriptProperties() {
+  var timestampInit = Date.now();
   scriptProperties.setProperty(HP_KEY, 0);
   scriptProperties.setProperty(LVL_KEY, 0);
+  scriptProperties.setProperty(TIMESTAMP_KEY, timestampInit);
 }
 
 function sanitizeInput (input, minimum, maximum) {
