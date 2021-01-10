@@ -37,6 +37,8 @@ const HEADERS = {
   "x-api-key" : API_TOKEN,
 }
 
+const scriptProperties = PropertiesService.getScriptProperties(); // Constants can have properties changed
+
 const SNOWBALL_TEXT = "**Snowball (self only)**";
 const SNOWBALL_ALIAS = "snowball";
 const SNOWBALL_NOTES = "Turn yourself into a cool snowman! Costs 15 GP, lasts until tomorrow. Click again to pay 5 GP and return to normal.";
@@ -102,6 +104,9 @@ const RANDOM_BUTTON = {
     "value": RANDOM_VALUE,
 }
 
+const TIMESTAMP_KEY = "TIMESTAMP_KEY";
+var timestampKey = "";
+
 function doOneTimeSetup() {
   // These are not "else if" statements on purpose
   if (CREATE_SPOOKY_SPARKLES == 1) {
@@ -131,6 +136,9 @@ function doOneTimeSetup() {
     "options" : options,
   }
   apiMult_createNewWebhookNoDuplicates(payload);
+  
+  // set script properties so they carry over to next session
+  initScriptProperties();
 }
 
 // do things when the webhook runs
@@ -144,92 +152,104 @@ function doPost(e) {
     task.alias = "";
   }
   
-  if (type == "scored") {
-    const responseUser = api_getAuthenticatedUserProfile("stats");
-    user = JSON.parse(responseUser).data;
+  if ( (type == "scored") && ( (task.alias == SNOWBALL_ALIAS) || (task.alias == SPOOKY_SPARKLES_ALIAS) || (task.alias == SHINY_SEED_ALIAS) || 
+    (task.alias == SEAFOAM_ALIAS) || (task.alias == RANDOM_ALIAS) ) ) {
     
-    var gp = user.stats.gp;
-    var isSnowball = user.stats.buffs.snowball;
-    var isSpookySparkles = user.stats.buffs.spookySparkles;
-    var isShinySeed = user.stats.buffs.shinySeed;
-    var isSeafoam = user.stats.buffs.seafoam;
+    var timestampKey = TIMESTAMP_KEY;
+    var timeStart = Number(scriptProperties.getProperty(timestampKey));
+    if ( (timeStart == 0) || (timeStart == "") || (timeStart == undefined) || (timeStart == null) ) {
+      timeStart = Date.now();
+    }
+    var timeEnd = Date.now();
     
-    // If any of the Boolean search flipped, reset them and subtract 5 GP (if they don't have it, send error meesage)
-    if ( (task.alias == SNOWBALL_ALIAS) || (task.alias == SPOOKY_SPARKLES_ALIAS) || (task.alias == SHINY_SEED_ALIAS) || 
-      (task.alias == SEAFOAM_ALIAS) || (task.alias == RANDOM_ALIAS) ) {
+    // Rate limiting: If it's been less than 30 seconds since they last clicked one of these buttons, do nothing
+    if ( (timeEnd - timeStart) >= 30000 ) {
+    
+      const responseUser = api_getAuthenticatedUserProfile("stats");
+      user = JSON.parse(responseUser).data;
       
-        if ( (isSnowball) || (isSpookySparkles) || (isShinySeed) || (isSeafoam) ) {
-          if ( gp >= 5 ) {    
-            api_updateUser({"stats.buffs.snowball" : false, "stats.buffs.spookySparkles" : false, "stats.buffs.shinySeed" : false,
-                      "stats.buffs.seafoam" : false, "stats.gp" : gp - 5});
+      var gp = user.stats.gp;
+      var isSnowball = user.stats.buffs.snowball;
+      var isSpookySparkles = user.stats.buffs.spookySparkles;
+      var isShinySeed = user.stats.buffs.shinySeed;
+      var isSeafoam = user.stats.buffs.seafoam;
+      
+      // If any of the Boolean search flipped, reset them and subtract 5 GP (if they don't have it, send error meesage)
+      if ( (isSnowball) || (isSpookySparkles) || (isShinySeed) || (isSeafoam) ) {
+        if ( gp >= 5 ) {
+          api_updateUser({"stats.buffs.snowball" : false, "stats.buffs.spookySparkles" : false, "stats.buffs.shinySeed" : false,
+            "stats.buffs.seafoam" : false, "stats.gp" : gp - 5});
+        }
+        else {
+          api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 5 GP to transform back.", "toUserId" : USER_ID});
+        }
+      }
+      // Otherwise, subtract 15 GP and do the correct transformation (if they don't have it, send error meesage)
+      else {
+        if (task.alias == SNOWBALL_ALIAS) {
+          if ( gp >= 15) {
+            api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
           }
           else {
-            api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 5 GP to transform back.", "toUserId" : USER_ID});
+            api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
           }
         }
-        // Otherwise, subtract 15 GP and do the correct transformation (if they don't have it, send error meesage)
-        else {
-          if (task.alias == SNOWBALL_ALIAS) {
-            if ( gp >= 15) {
-              api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
-            }
-            else {
-              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-            }
+      
+        else if (task.alias == SPOOKY_SPARKLES_ALIAS) {
+          if ( gp >= 15) {
+            api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
           }
-        
-          else if (task.alias == SPOOKY_SPARKLES_ALIAS) {
-            if ( gp >= 15) {
-              api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
-            }
-            else {
-              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-            }
-          }
-          
-          else if (task.alias == SHINY_SEED_ALIAS) {
-            if ( gp >= 15) {
-              api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
-            }
-            else {
-              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-            }
-          }
-          
-          else if (task.alias == SEAFOAM_ALIAS) {
-            if ( gp >= 15) {
-              api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
-            }
-            else {
-              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-            }
-          }
-          
-          else if (task.alias == RANDOM_ALIAS) {
-            if ( gp >= 15) {
-              var rand = Math.floor((Math.random() * 4) + 1);
-              switch (rand){
-                case 1:
-                  api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
-                  break;
-                case 2:
-                  api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
-                  break;
-                case 3:
-                  api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
-                  break;
-                case 4:
-                  api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
-                  break;
-              }
-            }
-            else {
-              api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
-            }
+          else {
+            api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
           }
         }
+          
+        else if (task.alias == SHINY_SEED_ALIAS) {
+          if ( gp >= 15) {
+            api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
+          }
+          else {
+            api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+          }
+        }
+          
+        else if (task.alias == SEAFOAM_ALIAS) {
+          if ( gp >= 15) {
+            api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
+          }
+          else {
+            api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+          }
+        }
+          
+        else if (task.alias == RANDOM_ALIAS) {
+          if ( gp >= 15) {
+            var rand = Math.floor((Math.random() * 4) + 1);
+            switch (rand){
+              case 1:
+                api_updateUser({"stats.buffs.snowball" : true, "stats.gp" : gp - 15});
+                break;
+              case 2:
+                api_updateUser({"stats.buffs.spookySparkles" : true, "stats.gp" : gp - 15});
+                break;
+              case 3:
+                api_updateUser({"stats.buffs.shinySeed" : true, "stats.gp" : gp - 15});
+                break;
+              case 4:
+                api_updateUser({"stats.buffs.seafoam" : true, "stats.gp" : gp - 15});
+                break;
+            }
+          }
+          else {
+            api_sendPrivateMessage({"message" : "Insufficient gold: you need at least 15 GP.", "toUserId" : USER_ID});
+          }
+        }
+      }
     }
-  
+    // Save values to non-volatile memory
+    timeStart = timeEnd;
+    scriptProperties.setProperty(timestampKey, timeStart);
+    
     return HtmlService.createHtmlOutput();
   }
 }
@@ -289,6 +309,12 @@ function api_createNewWebhook(payload) {
    
   const url = "https://habitica.com/api/v3/user/webhook";
   return UrlFetchApp.fetch(url, params);
+}
+
+// Sets initial properties that will be used/saved later.
+function initScriptProperties() {
+  var timestampInit = Date.now();
+  scriptProperties.setProperty(TIMESTAMP_KEY, timestampInit);
 }
 
 // Gets user info so I can use it, especially stats like mana, experience, and level
