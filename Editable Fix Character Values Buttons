@@ -363,7 +363,7 @@ function multParseAndEvaluate(hp, xp, mp, gp, inputString) {
   }
   else {
     // update all four stats with a single POST call
-    api_updateUser({"stats.hp" : newHp, "stats.exp" : newXp, "stats.mp" : newMp, "stats.gp" : newGp + 25});
+    api_updateUser({"stats.hp" : newHp, "stats.exp" : newXp, "stats.mp" : newMp, "stats.gp" : newGp});
   }
 }
 
