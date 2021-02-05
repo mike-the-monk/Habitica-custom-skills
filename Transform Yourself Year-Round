@@ -245,11 +245,10 @@ function doPost(e) {
           }
         }
       }
-    }
-    // Save values to non-volatile memory
-    timeStart = timeEnd;
+      // Save values to non-volatile memory, but only from within the rate-limited if-block (we don't want to save the timestamp unless the script ran)
+      timeStart = timeEnd;
     scriptProperties.setProperty(timestampKey, timeStart);
-    
+    }
     return HtmlService.createHtmlOutput();
   }
 }
