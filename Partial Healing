@@ -193,9 +193,15 @@ function api_getAuthenticatedUserProfile(userFields) {
 
 // Sets initial properties that will be used/saved later.
 function initScriptProperties() {
+  const responseInit = api_getAuthenticatedUserProfile("stats");
+  user = JSON.parse(responseInit).data;
+    
+  var currentHp = user.stats.hp;
+  var currentLvl = user.stats.lvl;
   var timestampInit = Date.now();
-  scriptProperties.setProperty(HP_KEY, 0);
-  scriptProperties.setProperty(LVL_KEY, 0);
+  
+  scriptProperties.setProperty(HP_KEY, currentHp);
+  scriptProperties.setProperty(LVL_KEY, currentLvl);
   scriptProperties.setProperty(TIMESTAMP_KEY, timestampInit);
 }
 
