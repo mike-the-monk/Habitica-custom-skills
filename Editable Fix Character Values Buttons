@@ -426,17 +426,20 @@ function parseAndEvaluate(inputString, searchTerm, statValue){
           // turn the raw number into a percent
           var percentFromNotes = (smallerSubstringAsNumber / 100); 
           
-          // ensure the percent is between 0 and 100; no need for error message, just sanitize it
-          var sanitizedPercent = sanitizeInput(percentFromNotes, 0, 100); 
-          
-          // multiply the sanitized percent times the stat value it's going to be the percent of
-          var percentOfStatValue = statValue * sanitizedPercent;
-          
           if ( direction == "up") {
+            // multiply the percent times the stat value it's going to be the percent of
+            var percentOfStatValue = statValue * percentFromNotes;
+            
             return ( statValue + percentOfStatValue );
           }
           else if (direction == "down") {
-            return ( statValue - percentOfStatValue );
+            // we must sanitize entries that are beyond 0-100 since we don't want to subtract greater than 100% of a value; this didn't need to happen for positive, just for negative
+            var sanitizedPercent = sanitizeInput(percentFromNotes, 0, 100); 
+            
+            // multiply the sanitized percent times the stat value it's going to be the percent of
+            var sanitizedPercentOfStatValue = statValue * sanitizedPercent;
+            
+            return ( statValue - sanitizedPercentOfStatValue);
           }
           else { // it shouldn't be possible for this "else" condition to happen, but just in case...
             api_sendPrivateMessageAlways({"message" : "Error: there should be a '+' or a '-' after '" + searchTerm +"'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).", "toUserId" : USER_ID});
