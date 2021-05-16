@@ -423,7 +423,14 @@ function parseAndEvaluate(inputString, searchTerm, statValue){
       // If it is a number, proceed as normal
       else {
         if (isPercent) {
-          var percentOfStatValue = statValue * (smallerSubstringAsNumber / 100);
+          // turn the raw number into a percent
+          var percentFromNotes = (smallerSubstringAsNumber / 100); 
+          
+          // ensure the percent is between 0 and 100; no need for error message, just sanitize it
+          var sanitizedPercent = sanitizeInput(percentFromNotes, 0, 100); 
+          
+          // multiply the sanitized percent times the stat value it's going to be the percent of
+          var percentOfStatValue = statValue * sanitizedPercent;
           
           if ( direction == "up") {
             return ( statValue + percentOfStatValue );
