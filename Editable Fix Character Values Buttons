@@ -387,12 +387,6 @@ function multParseAndEvaluate(hp, xp, mp, gp, inputString) {
   newXp = sanitizePositive(parseAndEvaluate(inputString, "XP:", xp));
   newMp = sanitizeInput(parseAndEvaluate(inputString, "MP:", mp), 0, maxMp);
   newGp = sanitizePositive(parseAndEvaluate(inputString, "GP:", gp));
-        
-  api_sendPrivateMessageAlways({"message" : "New HP is " + newHp + ", " +
-                                "New XP is " + newXp + ", " +
-                                "New MP is " + newMp + ", " +
-                                "New GP is " + newGp
-                                , "toUserId" : USER_ID});
   
   // check if an error happened; 0.184937265 is the value I randomly generated that I'm using to check errors, it's unlikely a user will input it.
   if ( ( newHp == 0.184937265 ) || ( newXp == 0.184937265 ) || ( newMp == 0.184937265 ) || ( newGp == 0.184937265 ) ) {
