@@ -99,6 +99,38 @@ const BUTTON_5_BUTTON = {
     "value": BUTTON_5_VALUE,
 }
 
+// error messages: semicolon
+const SEMICOLON_ERROR_MSG_START = "Error: there should be a semicolon following '";
+const SEMICOLON_ERROR_MSG_END = "'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).";
+
+// error message: number after + or -
+const NUMBER_AFTER_DIRECTION_ERROR_MSG = "Error: there should be a number after the direction sign (+ or -) and before the semicolon. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).";
+
+// error messages: missing a + or -
+const MISSING_DIRECTION_ERROR_MSG_START = "Error: there should be a '+' or a '-' after '"; 
+const MISSING_DIRECTION_ERROR_MSG_END = "'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).";
+
+// insufficient cost messages
+
+const INSUFFICIENT_COST_MSG_START = "You don't have enough ";
+const INSUFFICIENT_COST_MSG_END = " to pay for this skill.";
+
+const INSUFFICIENT_COST_MSG_VARIABLE_4 = "HP or XP or MP or GP";
+const INSUFFICIENT_COST_MSG_VARIABLE_3H = "XP or MP or GP";
+const INSUFFICIENT_COST_MSG_VARIABLE_3X = "HP or MP or GP";
+const INSUFFICIENT_COST_MSG_VARIABLE_3M = "HP or XP or GP";
+const INSUFFICIENT_COST_MSG_VARIABLE_3G = "HP or XP or MP";
+const INSUFFICIENT_COST_MSG_VARIABLE_2HX = "HP or XP";
+const INSUFFICIENT_COST_MSG_VARIABLE_2HM = "HP or MP";
+const INSUFFICIENT_COST_MSG_VARIABLE_2HG = "HP or GP";
+const INSUFFICIENT_COST_MSG_VARIABLE_2XM = "XP or MP";
+const INSUFFICIENT_COST_MSG_VARIABLE_2XG = "XP or GP";
+const INSUFFICIENT_COST_MSG_VARIABLE_2MG = "MP or GP";
+const INSUFFICIENT_COST_MSG_VARIABLE_1H = "HP";
+const INSUFFICIENT_COST_MSG_VARIABLE_1X = "XP";
+const INSUFFICIENT_COST_MSG_VARIABLE_1M = "MP";
+const INSUFFICIENT_COST_MSG_VARIABLE_1G = "GP";
+
 const TIMESTAMP_KEY = "TIMESTAMP_KEY";
 var timestampKey = "";
 
@@ -181,7 +213,6 @@ function doPost(e) {
           for (var i in tasksRewards) {
             if (tasksRewards[i].alias == BUTTON_1_ALIAS ) {
               notes = tasksRewards[i].notes;
-              
             }
           }
         }
@@ -357,9 +388,69 @@ function multParseAndEvaluate(hp, xp, mp, gp, inputString) {
   newMp = sanitizeInput(parseAndEvaluate(inputString, "MP:", mp), 0, maxMp);
   newGp = sanitizePositive(parseAndEvaluate(inputString, "GP:", gp));
         
+  api_sendPrivateMessageAlways({"message" : "New HP is " + newHp + ", " +
+                                "New XP is " + newXp + ", " +
+                                "New MP is " + newMp + ", " +
+                                "New GP is " + newGp
+                                , "toUserId" : USER_ID});
+  
   // check if an error happened; 0.184937265 is the value I randomly generated that I'm using to check errors, it's unlikely a user will input it.
-  if ( ( newHp == 0.184937265 ) || ( newXp == 0.184937265 ) || ( newMp == 0.184937265 )|| ( newGp == 0.184937265 ) ){
+  if ( ( newHp == 0.184937265 ) || ( newXp == 0.184937265 ) || ( newMp == 0.184937265 ) || ( newGp == 0.184937265 ) ) {
     // do nothing, the error message was already sent
+  }  
+  
+  // check if there was insufficient stat(s) to pay the cost; 0.562739481 is the value I'm using to check it, it's unlikely a user will input it.
+  else if ( ( newHp == 0.562739481 ) || ( newXp == 0.562739481 ) || ( newMp == 0.562739481 ) || ( newGp == 0.562739481 ) ) {
+    
+    // send error message based on which value is insufficient, starting with "missing all 4"
+    if ( ( newHp == 0.562739481 ) && ( newXp == 0.562739481 ) && ( newMp == 0.562739481 ) && ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_4 + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    // now try scenarios where 3 stats are missing
+    else if ( ( newXp == 0.562739481 ) && ( newMp == 0.562739481 ) && ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_3H + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newHp == 0.562739481 ) && ( newMp == 0.562739481 ) && ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_3X + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newHp == 0.562739481 ) && ( newXp == 0.562739481 ) && ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_3M + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newHp == 0.562739481 ) && ( newXp == 0.562739481 ) && ( newMp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_3G + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    // now try scenarios where 2 stats are missing
+    else if ( ( newHp == 0.562739481 ) && ( newXp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_2HX + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newHp == 0.562739481 ) && ( newMp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_2HM + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newHp == 0.562739481 ) && ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_2HG + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newXp == 0.562739481 ) && ( newMp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_2XM + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newXp == 0.562739481 ) && ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_2XG + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newMp == 0.562739481 ) && ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_2MG + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    // finally try scenarios missing only 1 stat
+    else if ( ( newHp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_1H + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newXp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_1X + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newMp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_1M + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
+    else if ( ( newGp == 0.562739481 ) ) {
+      api_sendPrivateMessageAlways({"message" : INSUFFICIENT_COST_MSG_START + INSUFFICIENT_COST_MSG_VARIABLE_1G + INSUFFICIENT_COST_MSG_END, "toUserId" : USER_ID});
+    }
   }
   else {
     // update all four stats with a single POST call
@@ -380,12 +471,12 @@ function parseAndEvaluate(inputString, searchTerm, statValue){
     // Find where the semicolon is in the string (following the search term)
     var indexSemicolon = findIndexOfSemicolon(inputString, index);
     if ( indexSemicolon == -1 ) {
-      api_sendPrivateMessageAlways({"message" : "Error: there should be a semicolon following '" + searchTerm +"'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttonss).", "toUserId" : USER_ID});
+      api_sendPrivateMessageAlways({"message" : SEMICOLON_ERROR_MSG_START + searchTerm + SEMICOLON_ERROR_MSG_END, "toUserId" : USER_ID});
       return 0.184937265; // this signals to the script that there was an error
     }
     // if the two indices are too far apart, the semicolon is likely following the next search term, not the correct one.
     else if ( ( indexSemicolon - index ) >= 15 ) {
-      api_sendPrivateMessageAlways({"message" : "Error: there should be a semicolon following '" + searchTerm +"'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).", "toUserId" : USER_ID});
+      api_sendPrivateMessageAlways({"message" : SEMICOLON_ERROR_MSG_START + searchTerm + SEMICOLON_ERROR_MSG_END, "toUserId" : USER_ID});
       return 0.184937265; // this signals to the script that there was an error
     }
     else {
@@ -417,7 +508,7 @@ function parseAndEvaluate(inputString, searchTerm, statValue){
       // If it's not a number, return an error
       var isNan = Number.isNaN(smallerSubstringAsNumber);
       if (isNan) {
-        api_sendPrivateMessageAlways({"message" : "Error: there should be a number after the direction sign (+ or -) and before the semicolon. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).", "toUserId" : USER_ID});
+        api_sendPrivateMessageAlways({"message" : NUMBER_AFTER_DIRECTION_ERROR_MSG, "toUserId" : USER_ID});
         return 0.184937265; // this signals to the script that there was an error
       }
       // If it is a number, proceed as normal
@@ -434,7 +525,7 @@ function parseAndEvaluate(inputString, searchTerm, statValue){
           }
           else if (direction == "down") {
             // we must sanitize entries that are beyond 0-100 since we don't want to subtract greater than 100% of a value; this didn't need to happen for positive, just for negative
-            var sanitizedPercent = sanitizeInput(percentFromNotes, 0, 100); 
+            var sanitizedPercent = sanitizeInput(percentFromNotes, 0, 100);
             
             // multiply the sanitized percent times the stat value it's going to be the percent of
             var sanitizedPercentOfStatValue = statValue * sanitizedPercent;
@@ -442,7 +533,7 @@ function parseAndEvaluate(inputString, searchTerm, statValue){
             return ( statValue - sanitizedPercentOfStatValue);
           }
           else { // it shouldn't be possible for this "else" condition to happen, but just in case...
-            api_sendPrivateMessageAlways({"message" : "Error: there should be a '+' or a '-' after '" + searchTerm +"'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).", "toUserId" : USER_ID});
+            api_sendPrivateMessageAlways({"message" : MISSING_DIRECTION_ERROR_MSG_START + searchTerm + MISSING_DIRECTION_ERROR_MSG_END, "toUserId" : USER_ID});
             return 0.184937265; // this signals to the script that there was an error
           }
         }
@@ -451,10 +542,16 @@ function parseAndEvaluate(inputString, searchTerm, statValue){
             return ( statValue + smallerSubstringAsNumber );
           }
           else if (direction == "down") {
-            return ( statValue - smallerSubstringAsNumber );
+            // check if stat value is sufficient to pay the cost
+            if ( ( statValue - smallerSubstringAsNumber ) < 0 ) {
+              return 0.562739481; // this is the error-checking amount for insufficient stat to pay the cost
+            }
+            else {
+              return ( statValue - smallerSubstringAsNumber );
+            }
           }
           else { // it shouldn't be possible for this "else" condition to happen, but just in case...
-            api_sendPrivateMessageAlways({"message" : "Error: there should be a '+' or a '-' after '" + searchTerm +"'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).", "toUserId" : USER_ID});
+            api_sendPrivateMessageAlways({"message" : MISSING_DIRECTION_ERROR_MSG_START + searchTerm + MISSING_DIRECTION_ERROR_MSG_END, "toUserId" : USER_ID});
             return 0.184937265; // this signals to the script that there was an error
           }
         }
@@ -500,7 +597,7 @@ function findDirection(trimmedSubstring, searchTerm) {
     return "down";
   }
   else {
-    api_sendPrivateMessageAlways({"message" : "Error: there should be a '+' or a '-' after '" + searchTerm +"'. For help formatting the notes section of the button, see the [wiki page](https://habitica.fandom.com/wiki/Editable_Fix_Character_Values_Buttons).", "toUserId" : USER_ID});
+    api_sendPrivateMessageAlways({"message" : MISSING_DIRECTION_ERROR_MSG_START + searchTerm + MISSING_DIRECTION_ERROR_MSG_END, "toUserId" : USER_ID});
     return "error";
   }
 }
