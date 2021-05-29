@@ -391,123 +391,108 @@ function doPost(e) {
           if ( task.alias == OMNI_BUFF_ALIAS ) {
             var enoughMana = checkMana(mp, OMNI_BUFF_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs
-              buffStr(unbuffedStr, buffsStr, mp, OMNI_BUFF_MP_COST);
-              buffInt(unbuffedInt, buffsInt, mp, 0);
-              buffCon(unbuffedCon, buffsCon, mp, 0);
-              buffPer(unbuffedPer, buffsPer, mp, 0);
+              buffStr(unbuffedStr, buffsStr);
+              buffInt(unbuffedInt, buffsInt);
+              buffCon(unbuffedCon, buffsCon);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
           else if ( task.alias == VALOROUS_PRESENCE_SELF_ALIAS) {
             var enoughMana = checkMana(mp, VALOROUS_PRESENCE_SELF_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs
-              buffStr(unbuffedStr, buffsStr, mp, VALOROUS_PRESENCE_SELF_MP_COST);
+              buffStr(unbuffedStr, buffsStr);
             }
           }
           else if ( task.alias == EARTHQUAKE_SELF_ALIAS) {
             var enoughMana = checkMana(mp, EARTHQUAKE_SELF_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs        
-              buffInt(unbuffedInt, buffsInt, mp, EARTHQUAKE_SELF_MP_COST);
+              buffInt(unbuffedInt, buffsInt);
             }
           }
           else if ( task.alias == PROTECTIVE_AURA_SELF_ALIAS) {
             var enoughMana = checkMana(mp, PROTECTIVE_AURA_SELF_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs
-              buffCon(unbuffedCon, buffsCon, mp, PROTECTIVE_AURA_SELF_MP_COST);
+              buffCon(unbuffedCon, buffsCon);
             }
           }
           else if ( task.alias == TOOLS_OF_THE_TRADE_SELF_ALIAS) {
             var enoughMana = checkMana(mp, TOOLS_OF_THE_TRADE_SELF_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs
-              buffPer(unbuffedPer, buffsPer, mp, TOOLS_OF_THE_TRADE_SELF_MP_COST);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
           else if ( task.alias == TRIPLE_BUFF_STR_INT_CON_ALIAS) {
             var enoughMana = checkMana(mp, TRIPLE_BUFF_STR_INT_CON_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs 
-              buffStr(unbuffedStr, buffsStr, mp, TRIPLE_BUFF_STR_INT_CON_MP_COST);
-              buffInt(unbuffedInt, buffsInt, mp, 0);
-              buffCon(unbuffedCon, buffsCon, mp, 0);
+              buffStr(unbuffedStr, buffsStr);
+              buffInt(unbuffedInt, buffsInt);
+              buffCon(unbuffedCon, buffsCon);
             }
           }
           else if ( task.alias == TRIPLE_BUFF_STR_INT_PER_ALIAS) {
             var enoughMana = checkMana(mp, TRIPLE_BUFF_STR_INT_PER_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs   
-              buffStr(unbuffedStr, buffsStr, mp, TRIPLE_BUFF_STR_INT_PER_MP_COST);
-              buffInt(unbuffedInt, buffsInt, mp, 0);
-              buffPer(unbuffedPer, buffsPer, mp, 0);
+              buffStr(unbuffedStr, buffsStr);
+              buffInt(unbuffedInt, buffsInt);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
           else if ( task.alias == TRIPLE_BUFF_STR_CON_PER_ALIAS) {
             var enoughMana = checkMana(mp, TRIPLE_BUFF_STR_CON_PER_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs
-              buffStr(unbuffedStr, buffsStr, mp, TRIPLE_BUFF_STR_CON_PER_MP_COST);
-              buffCon(unbuffedCon, buffsCon, mp, 0);
-              buffPer(unbuffedPer, buffsPer, mp, 0);
+              buffStr(unbuffedStr, buffsStr);
+              buffCon(unbuffedCon, buffsCon);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
           else if ( task.alias == TRIPLE_BUFF_INT_CON_PER_ALIAS) {
             var enoughMana = checkMana(mp, TRIPLE_BUFF_INT_CON_PER_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs      
-              buffInt(unbuffedInt, buffsInt, mp, TRIPLE_BUFF_INT_CON_PER_MP_COST);
-              buffCon(unbuffedCon, buffsCon, mp, 0);
-              buffPer(unbuffedPer, buffsPer, mp, 0);
+              buffInt(unbuffedInt, buffsInt);
+              buffCon(unbuffedCon, buffsCon);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
           else if ( task.alias == DOUBLE_BUFF_STR_INT_ALIAS) {
             var enoughMana = checkMana(mp, DOUBLE_BUFF_STR_INT_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs            
-              buffStr(unbuffedStr, buffsStr, mp, DOUBLE_BUFF_STR_INT_MP_COST);
-              buffInt(unbuffedInt, buffsInt, mp, 0);
+              buffStr(unbuffedStr, buffsStr);
+              buffInt(unbuffedInt, buffsInt);
             }
           }
           else if ( task.alias == DOUBLE_BUFF_STR_CON_ALIAS) {
             var enoughMana = checkMana(mp, DOUBLE_BUFF_STR_CON_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs
-              buffStr(unbuffedStr, buffsStr, mp, DOUBLE_BUFF_STR_CON_MP_COST);
-              buffCon(unbuffedCon, buffsCon, mp, 0);
+              buffStr(unbuffedStr, buffsStr);
+              buffCon(unbuffedCon, buffsCon);
             }
           }
           else if ( task.alias == DOUBLE_BUFF_STR_PER_ALIAS) {
             var enoughMana = checkMana(mp, DOUBLE_BUFF_STR_PER_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs
-              buffStr(unbuffedStr, buffsStr, mp, DOUBLE_BUFF_STR_PER_MP_COST);
-              buffPer(unbuffedPer, buffsPer, mp, 0);
+              buffStr(unbuffedStr, buffsStr);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
           else if ( task.alias == DOUBLE_BUFF_INT_CON_ALIAS) {
             var enoughMana = checkMana(mp, DOUBLE_BUFF_INT_CON_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs       
-              buffInt(unbuffedInt, buffsInt, mp, DOUBLE_BUFF_INT_CON_MP_COST);
-              buffCon(unbuffedCon, buffsCon, mp, 0);
+              buffInt(unbuffedInt, buffsInt);
+              buffCon(unbuffedCon, buffsCon);
             }
           }
           else if ( task.alias == DOUBLE_BUFF_INT_PER_ALIAS) {
             var enoughMana = checkMana(mp, DOUBLE_BUFF_INT_PER_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs          
-              buffInt(unbuffedInt, buffsInt, mp, DOUBLE_BUFF_INT_PER_MP_COST);
-              buffPer(unbuffedPer, buffsPer, mp, 0);
+              buffInt(unbuffedInt, buffsInt);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
           else if ( task.alias == DOUBLE_BUFF_CON_PER_ALIAS) {
             var enoughMana = checkMana(mp, DOUBLE_BUFF_CON_PER_MP_COST);
             if (enoughMana) {
-              // Subtract mana cost once, and do all relevant buffs    
-              buffCon(unbuffedCon, buffsCon, mp, DOUBLE_BUFF_CON_PER_MP_COST);
-              buffPer(unbuffedPer, buffsPer, mp, 0);
+              buffCon(unbuffedCon, buffsCon);
+              buffPer(unbuffedPer, buffsPer);
             }
           }
         }
@@ -753,13 +738,14 @@ function calcEquipmentAndClassPer(equipment) {
   return equipmentAndClassPer;
 }
 
-// Checks if sufficient mana, sends message if not
+// Checks if sufficient mana, sends message if not, deduct cost if true
 function checkMana(mp, mpCost){
   if (mp < mpCost) {
     api_sendPrivateMessage({"message" : "Insufficient mana to use this skill.", "toUserId" : USER_ID});
     return false;
   }
   else {
+    api_updateUser({"stats.mp" : mp - mpCost});
     return true;
   }
 }
@@ -778,22 +764,22 @@ function api_updateUser(payload) {
   return UrlFetchApp.fetch(url, params);
 }
 
-function buffStr(unbuffedStr, buffsStr, mp, mpCost) {
+function buffStr(unbuffedStr, buffsStr) {
   var buffAmount = Math.ceil( ( (unbuffedStr * 20) / (unbuffedStr + 200) ) );
-  api_updateUser({"stats.buffs.str" : buffsStr + buffAmount, "stats.mp" : mp - mpCost});
+  api_updateUser({"stats.buffs.str" : buffsStr + buffAmount});
 }
 
-function buffInt(unbuffedInt, buffsInt, mp, mpCost) {
+function buffInt(unbuffedInt, buffsInt) {
   var buffAmount = Math.ceil( ( (unbuffedInt * 30) / (unbuffedInt + 200) ) );
-  api_updateUser({"stats.buffs.int" : buffsInt + buffAmount, "stats.mp" : mp - mpCost});
+  api_updateUser({"stats.buffs.int" : buffsInt + buffAmount});
 }
 
-function buffCon(unbuffedCon, buffsCon, mp, mpCost) {
+function buffCon(unbuffedCon, buffsCon) {
   var buffAmount = Math.ceil( ( (unbuffedCon * 200) / (unbuffedCon + 200) ) );
-  api_updateUser({"stats.buffs.con" : buffsCon + buffAmount, "stats.mp" : mp - mpCost});
+  api_updateUser({"stats.buffs.con" : buffsCon + buffAmount});
 }
 
-function buffPer(unbuffedPer, buffsPer, mp, mpCost) {
+function buffPer(unbuffedPer, buffsPer) {
   var buffAmount = Math.ceil( ( (unbuffedPer * 100) / (unbuffedPer + 50) ) );
-  api_updateUser({"stats.buffs.per" : buffsPer + buffAmount, "stats.mp" : mp - mpCost});
+  api_updateUser({"stats.buffs.per" : buffsPer + buffAmount});
 }
