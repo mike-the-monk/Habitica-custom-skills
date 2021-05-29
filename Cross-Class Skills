@@ -271,8 +271,7 @@ function doPost(e) {
           else {
             var enoughMana = checkMana(mp, MP_COST_PICKPOCKET);
             if (enoughMana) {
-              // Subtract mana cost, and do the skill
-              pickpocket(PICKPOCKET_VERSION, PICKPOCKET_TASK_VALUE, PICKPOCKET_TASK_ID, gp, perception, mp, MP_COST_PICKPOCKET);
+              pickpocket(PICKPOCKET_VERSION, PICKPOCKET_TASK_VALUE, PICKPOCKET_TASK_ID, gp, perception);
             }
           }
         }
@@ -281,10 +280,9 @@ function doPost(e) {
             api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 12 to use this skill.", "toUserId" : USER_ID});
           }
           else {
-            var enoughMana = checkMana(mp, MP_COST_BACKSTAB );
+            var enoughMana = checkMana(mp, MP_COST_BACKSTAB);
             if (enoughMana) {
-              // Subtract mana cost, and do the skill
-              backstab(BACKSTAB_VERSION, BACKSTAB_TASK_VALUE, BACKSTAB_TASK_ID, gp, xp, strength, mp, MP_COST_BACKSTAB);
+              backstab(BACKSTAB_VERSION, BACKSTAB_TASK_VALUE, BACKSTAB_TASK_ID, gp, xp, strength);
             }
           }
         }
@@ -293,15 +291,14 @@ function doPost(e) {
             api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 14 to use this skill.", "toUserId" : USER_ID});
           }
           else {
-            var enoughMana = checkMana(mp, MP_COST_STEALTH );
-            if (enoughMana) {
-              // Check if you've already avoided all dailies, send message if yes
-              if (stealthedDailies >= totalDailies){
-                api_sendPrivateMessageAlways({"message" : "You've already avoided all you Dailies, so additional uses of this skill have no effect.", "toUserId" : USER_ID});
-              }
-              else {
-                // Subtract mana cost, and do the skill
-                stealth (totalDailies, stealthedDailies, perception, mp, MP_COST_STEALTH);
+            // Check if you've already avoided all dailies, send message if yes, and don't subtract MP cost
+            if (stealthedDailies >= totalDailies){
+              api_sendPrivateMessageAlways({"message" : "You've already avoided all you Dailies, so additional uses of this skill have no effect.", "toUserId" : USER_ID});
+            }
+            else {
+              var enoughMana = checkMana(mp, MP_COST_STEALTH);
+              if (enoughMana) {
+                stealth (totalDailies, stealthedDailies, perception);
               }
             }
           }
@@ -311,11 +308,11 @@ function doPost(e) {
             api_sendPrivateMessage({"message" : "Insufficient level: you must be at least level 11 to use this skill.", "toUserId" : USER_ID});
           }
           else {
-            var enoughMana = checkMana(mp, MP_COST_HEALING_LIGHT );
-            if (enoughMana) {
-              // If at max HP, do nothing. Otherwise, subtract mana cost, and do the skill
-              if (hp < 50) {
-                healingLight (hp, constitution, intelligence, mp, MP_COST_HEALING_LIGHT);
+            // If at max HP, do nothing. Otherwise, subtract mana cost, and do the skill
+            if (hp < 50) {
+              var enoughMana = checkMana(mp, MP_COST_HEALING_LIGHT);
+              if (enoughMana) {
+                healingLight (hp, constitution, intelligence);
               }
             }
           }
@@ -332,8 +329,7 @@ function doPost(e) {
                 api_sendPrivateMessageAlways({"message" : "You've already used this skill. Additional uses have no effect.", "toUserId" : USER_ID});
               }
               else {
-                // Subtract mana cost, and do the skill
-                chillingFrost(mp, MP_COST_CHILLING_FROST);
+                chillingFrost();
               }
             }
           }
@@ -345,8 +341,7 @@ function doPost(e) {
           else {
             var enoughMana = checkMana(mp, MP_COST_BURST_OF_FLAMES );
             if (enoughMana) {
-              // Subtract mana cost, and do the skill
-              burstOfFlames(BURST_OF_FLAMES_VERSION, BURST_OF_FLAMES_TASK_VALUE, BURST_OF_FLAMES_TASK_ID, xp, intelligence, perception, mp, MP_COST_BURST_OF_FLAMES); 
+              burstOfFlames(BURST_OF_FLAMES_VERSION, BURST_OF_FLAMES_TASK_VALUE, BURST_OF_FLAMES_TASK_ID, xp, intelligence, perception); 
             }
           }
         }
@@ -609,13 +604,14 @@ function calcEquipmentAndClassPer(equipment) {
   return equipmentAndClassPer;
 }
 
-// Checks if sufficient mana, sends message if not
+// Checks if sufficient mana, sends message if not, deduct cost if true
 function checkMana(mp, mpCost){
   if (mp < mpCost) {
     api_sendPrivateMessage({"message" : "Insufficient mana to use this skill.", "toUserId" : USER_ID});
     return false;
   }
   else {
+    api_updateUser({"stats.mp" : mp - mpCost});
     return true;
   }
 }
@@ -717,16 +713,16 @@ function criticalHit (stat, chance) {
   }
 }
 
-function pickpocket (version, presetTaskValue, taskId, gp, per, mp, mpCost) {
+function pickpocket (version, presetTaskValue, taskId, gp, per) {
   var taskValue = getTaskValue(version, presetTaskValue, taskId);
   var bonus = ( (taskValue + 1) / (per * 0.5 ) );
   var newGp = ( ( 25 * bonus ) / ( bonus + 75) );
   var startingGp = gp;
   
-  api_updateUser({"stats.gp" : startingGp + newGp, "stats.mp" : mp - mpCost});
+  api_updateUser({"stats.gp" : startingGp + newGp});
 }
 
-function backstab (version, presetTaskValue, taskId, gp, xp, str, mp, mpCost) {
+function backstab (version, presetTaskValue, taskId, gp, xp, str) {
   var multiplier = criticalHit(str, 0.3);
   var taskValue = getTaskValue(version, presetTaskValue, taskId);
   var bonus = ( ( (taskValue + 1) / (str * 0.5 ) ) * multiplier ) ;
@@ -735,43 +731,43 @@ function backstab (version, presetTaskValue, taskId, gp, xp, str, mp, mpCost) {
   var startingXp = xp;
   var startingGp = gp;
 
-  api_updateUser({"stats.gp" : startingGp + newGp, "stats.exp" : startingXp + newXp, "stats.mp" : mp - mpCost});
+  api_updateUser({"stats.gp" : startingGp + newGp, "stats.exp" : startingXp + newXp});
 }
 
-function stealth (totalDailies, prevStealthedDailies, per, mp, mpCost) {
+function stealth (totalDailies, prevStealthedDailies, per) {
   var newDailiesDodged = Math.ceil( ( 0.64 * totalDailies * ( per / (per + 55) ) ) );
   
   // If they'd Stealth more than total Dailies, instead only Stealth the total
   if ( ( prevStealthedDailies + newDailiesDodged ) >= totalDailies ) {
-    api_updateUser({"stats.buffs.stealth" : totalDailies, "stats.mp" : mp - mpCost});
+    api_updateUser({"stats.buffs.stealth" : totalDailies});
   }
   else {
-    api_updateUser({"stats.buffs.stealth" : prevStealthedDailies + newDailiesDodged, "stats.mp" : mp - mpCost});
+    api_updateUser({"stats.buffs.stealth" : prevStealthedDailies + newDailiesDodged});
   }
   
   api_sendPrivateMessageAlways(payload);
 }
 
-function healingLight (hp, con, int, mp, mpCost) {
+function healingLight (hp, con, int) {
   var healing = ( ( con + int + 5 ) * 0.075 );
   if (hp + healing >= 50) {
     api_updateUser({"stats.hp" : 50});
   }
   else {
-    api_updateUser({"stats.hp" : hp + healing, "stats.mp" : mp - mpCost});
+    api_updateUser({"stats.hp" : hp + healing});
   }
 }
 
-function chillingFrost(mp, mpCost) {
-  api_updateUser({"stats.buffs.streaks" : true, "stats.mp" : mp - mpCost});
+function chillingFrost() {
+  api_updateUser({"stats.buffs.streaks" : true});
 }
 
-function burstOfFlames (version, presetTaskValue, taskId, xp, int, per, mp, mpCost) {
+function burstOfFlames (version, presetTaskValue, taskId, xp, int, per) {
   var multiplier = criticalHit(per, 0.03);
   var taskValue = getTaskValue(version, presetTaskValue, taskId);
   var bonus = Math.ceil( ( (taskValue + 1) / (int * 0.075 ) ) * multiplier ) ;
   var newXp = ( ( 75 * bonus ) / ( bonus + 37.5) );
   var startingXp = xp;
 
-  api_updateUser({"stats.exp" : startingXp + newXp, "stats.mp" : mp - mpCost});
+  api_updateUser({"stats.exp" : startingXp + newXp});
 }
