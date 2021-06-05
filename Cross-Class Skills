@@ -500,7 +500,7 @@ function calcEquipmentAndClassStr(equipment) {
 
   if (equipment != undefined) {  
     equipmentAndClassStr += equipment.str;
-    if (equipment.klass == user.stats.class) {
+    if ( (equipment.klass == user.stats.class) || ( (equipment.klass == "special") && (equipment.specialClass == user.stats.class) ) ) {
       equipmentAndClassStr += equipment.str / 2;
     }
   }
@@ -532,7 +532,7 @@ function calcEquipmentAndClassInt(equipment) {
 
   if (equipment != undefined) {  
     equipmentAndClassInt += equipment.int;
-    if (equipment.klass == user.stats.class) {
+    if ( (equipment.klass == user.stats.class) || ( (equipment.klass == "special") && (equipment.specialClass == user.stats.class) ) ) {
       equipmentAndClassInt += equipment.int / 2;
     }
   }
@@ -564,7 +564,7 @@ function calcEquipmentAndClassCon(equipment) {
 
   if (equipment != undefined) {  
     equipmentAndClassCon += equipment.con;
-    if (equipment.klass == user.stats.class) {
+    if ( (equipment.klass == user.stats.class) || ( (equipment.klass == "special") && (equipment.specialClass == user.stats.class) ) ) {
       equipmentAndClassCon += equipment.con / 2;
     }
   }
@@ -596,7 +596,7 @@ function calcEquipmentAndClassPer(equipment) {
 
   if (equipment != undefined) {  
     equipmentAndClassPer += equipment.per;
-    if (equipment.klass == user.stats.class) {
+    if ( (equipment.klass == user.stats.class) || ( (equipment.klass == "special") && (equipment.specialClass == user.stats.class) ) ) {
       equipmentAndClassPer += equipment.per / 2;
     }
   }
