@@ -233,7 +233,7 @@ function calcEquipmentAndClassCon(equipment) {
 
   if (equipment != undefined) {  
     equipmentAndClassCon += equipment.con;
-    if (equipment.klass == user.stats.class) {
+    if ( (equipment.klass == user.stats.class) || ( (equipment.klass == "special") && (equipment.specialClass == user.stats.class) ) ) {
       equipmentAndClassCon += equipment.con / 2;
     }
   }
