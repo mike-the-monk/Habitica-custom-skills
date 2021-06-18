@@ -24,7 +24,7 @@ const CREATE_BURST_OF_FLAMES_DAMAGE_ONLY = 0; // Deal boss damage based on Intel
 const CREATE_BURST_OF_FLAMES_XP_PLUS_DAMAGE = 0; // Deal boss damage and gain XP based on Intelligence. 15 MP per use, multi-use only (to deal 90+ damage). Unlocks at level 11.
 const CREATE_BRUTAL_SMASH = 0; // Deal boss damage based on Strength. 10 MP per use, multi-use only (to deal 90+ damage). Unlocks at level 11. 
 const CREATE_RADIANT_SHIELD = 0; // Deal boss damage based on Constitution. 7.5 MP per use, multi-use only (to deal 90+ damage). Unlocks at level 11.
-const CREATE_SNEAK_ATTACK = 1; // Deal boss damage based on Perception. 10 MP per use, multi-use only (to deal 90+ damage). Unlocks at level 11.
+const CREATE_SNEAK_ATTACK = 0; // Deal boss damage based on Perception. 10 MP per use, multi-use only (to deal 90+ damage). Unlocks at level 11.
 
 
 // Which version of the skill do you want to use? (you can do the same or different for each skill)
