@@ -383,9 +383,13 @@ function doPost(e) {
           // Grab other user stats
           var mp = user.stats.mp;
           var buffsStr = user.stats.buffs.str;
+          if (!user.stats.buffs.str) buffsStr = 0;
           var buffsInt = user.stats.buffs.int;
+          if (!user.stats.buffs.int) buffsInt = 0;
           var buffsCon = user.stats.buffs.con;
+          if (!user.stats.buffs.con) buffsCon = 0;
           var buffsPer = user.stats.buffs.per;
+          if (!user.stats.buffs.per) buffsPer = 0;
           
           // See which buff is supposed to run, then do it (after checking if there's enough mana)
           if ( task.alias == OMNI_BUFF_ALIAS ) {
