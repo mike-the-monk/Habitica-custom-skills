@@ -230,7 +230,9 @@ function apiFree_getAllAvailableContentObjects() {
 
 // Purposely does not include buffs
 function calcConstitution() {
-  const levelCon = Math.floor(user.stats.lvl / 2);
+  const levelConRaw = Math.floor(user.stats.lvl / 2);
+  const levelCon = (levelConRaw > 50) ? 50 : levelConRaw;
+  
   var totalEquipmentAndClassCon = 0;
   const allocatedCon = user.stats.con;
   
