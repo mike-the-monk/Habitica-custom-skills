@@ -695,7 +695,9 @@ function api_sendPrivateMessageAlways(payload) {
 }
 
 function calculateStrength() {
-  const levelStr = Math.floor(user.stats.lvl / 2);
+  const levelStrRaw = Math.floor(user.stats.lvl / 2);
+  const levelStr = (levelStrRaw > 50) ? 50 : levelStrRaw;
+  
   var totalEquipmentAndClassStr = 0;
   const allocatedStr = user.stats.str;
   const buffsStr = user.stats.buffs.str;
@@ -727,7 +729,9 @@ function calcEquipmentAndClassStr(equipment) {
 }
 
 function calculateIntelligence() {
-  const levelInt = Math.floor(user.stats.lvl / 2);
+  const levelIntRaw = Math.floor(user.stats.lvl / 2);
+  const levelInt = (levelIntRaw > 50) ? 50 : levelIntRaw;
+  
   var totalEquipmentAndClassInt = 0;
   const allocatedInt = user.stats.int;
   const buffsInt = user.stats.buffs.int;
@@ -759,7 +763,9 @@ function calcEquipmentAndClassInt(equipment) {
 }
 
 function calculateConstitution() {
-  const levelCon = Math.floor(user.stats.lvl / 2);
+  const levelConRaw = Math.floor(user.stats.lvl / 2);
+  const levelCon = (levelConRaw > 50) ? 50 : levelConRaw;
+  
   var totalEquipmentAndClassCon = 0;
   const allocatedCon = user.stats.con;
   const buffsCon = user.stats.buffs.con;
@@ -791,7 +797,9 @@ function calcEquipmentAndClassCon(equipment) {
 }
 
 function calculatePerception() {
-  const levelPer = Math.floor(user.stats.lvl / 2);
+  const levelPerRaw = Math.floor(user.stats.lvl / 2);
+  const levelPer = (levelPerRaw > 50) ? 50 : levelPerRaw;
+  
   var totalEquipmentAndClassPer = 0;
   const allocatedPer = user.stats.per;
   const buffsPer = user.stats.buffs.per;
