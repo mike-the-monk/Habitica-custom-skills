@@ -619,7 +619,9 @@ function apiFree_getAllAvailableContentObjects() {
 }
 
 function calculateUnbuffedStrength() {
-  const levelStr = Math.floor(user.stats.lvl / 2);
+  const levelStrRaw = Math.floor(user.stats.lvl / 2);
+  const levelStr = (levelStrRaw > 50) ? 50 : levelStrRaw;
+  
   var totalEquipmentAndClassStr = 0;
   const allocatedStr = user.stats.str;
   
@@ -650,7 +652,9 @@ function calcEquipmentAndClassStr(equipment) {
 }
 
 function calculateUnbuffedIntelligence() {
-  const levelInt = Math.floor(user.stats.lvl / 2);
+  const levelIntRaw = Math.floor(user.stats.lvl / 2);
+  const levelInt = (levelIntRaw > 50) ? 50 : levelIntRaw;
+  
   var totalEquipmentAndClassInt = 0;
   const allocatedInt = user.stats.int;
   
@@ -681,7 +685,9 @@ function calcEquipmentAndClassInt(equipment) {
 }
 
 function calculateUnbuffedConstitution() {
-  const levelCon = Math.floor(user.stats.lvl / 2);
+  const levelConRaw = Math.floor(user.stats.lvl / 2);
+  const levelCon = (levelConRaw > 50) ? 50 : levelConRaw;
+  
   var totalEquipmentAndClassCon = 0;
   const allocatedCon = user.stats.con;
   
@@ -712,7 +718,9 @@ function calcEquipmentAndClassCon(equipment) {
 }
 
 function calculateUnbuffedPerception() {
-  const levelPer = Math.floor(user.stats.lvl / 2);
+  const levelPerRaw = Math.floor(user.stats.lvl / 2);
+  const levelPer = (levelPerRaw > 50) ? 50 : levelPerRaw;
+  
   var totalEquipmentAndClassPer = 0;
   const allocatedPer = user.stats.per;
   
