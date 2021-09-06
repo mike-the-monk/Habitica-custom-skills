@@ -350,7 +350,9 @@ function apiFree_getAllAvailableContentObjects() {
 }
 
 function calcTotalIntelligence() {
-  const levelInt = Math.floor(user.stats.lvl / 2);
+  const levelIntRaw = Math.floor(user.stats.lvl / 2);
+  const levelInt = (levelIntRaw > 50) ? 50 : levelIntRaw;
+  
   var totalEquipmentAndClassInt = 0;
   const allocatedInt = user.stats.int;
   const buffsInt = user.stats.buffs.int;
