@@ -1,7 +1,7 @@
 # Habitica-customizations
 I like customizing Habitica using its API, and my scripts automate and/or simplify the process for me.
 
-I no longer keep this repo up-to-date, I've moved everything in Custom Skills and Custom Potions into one repository that houses everything: https://github.com/mike-the-monk/Habitica-customizations
+**I no longer keep this repo up-to-date, I've moved everything in Custom Skills and Custom Potions into one repository that houses everything: https://github.com/mike-the-monk/Habitica-customizations**
 
 For information about each of the customizations, see the appropriate wiki page, I keep those up-to-date. The wiki pages include a description of what the script does and installation instructions.
 
